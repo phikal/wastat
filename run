@@ -1,13 +1,17 @@
-#!/usr/bin/sh --debugger
+#!/usr/bin/sh
 
 show_help () {
-	echo wastat v0.1
+	echo wastat v0.1, by phikal
 	echo
 	echo usage:
 	echo "	word-count, wc:"
 	echo "		count word occurances"
 	echo "		default chat file: chat.txt or 2 argument"
 	echo "		default output: words.lis or 3 argument"
+	echo "	word-output, wo:"
+	echo "		output all words separately"
+	echo "		default chat file: chat.txt or 2 argument"
+	echo "		default output: words.txt or 3 argument"
 	echo "	help, -h:"
 	echo "		this message"
 }
@@ -18,8 +22,8 @@ show_error () {
 }
 
 word_output () {
-	INPUT=${2:-chat.txt}
-	OUTPUT=${3:-words.txt}
+	INPUT=${1:-chat.txt}
+	OUTPUT=${2:-words.txt}
 
 	echo "Using $INPUT to extract words into $OUTPUT"
 	# extract message | extract words | to upper to lower case
@@ -28,8 +32,8 @@ word_output () {
 }
 
 word_count () {
-	INPUT=${2:-chat.txt}
-	OUTPUT=${3:-words.lis}
+	INPUT=${1:-chat.txt}
+	OUTPUT=${2:-words.lis}
 
 	echo "Using $INPUT to count words and save result into $OUTPUT"
 	# extract message | extract words | to upper to lower case | count | sort numerically
