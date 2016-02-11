@@ -18,6 +18,11 @@ directory but can easily be changed.
 * `./run wc [chat file] [output file]`
 	wc - or /word count/ will count how often what word was used
 	and output the results, sorted, by default, into `words.lis`
+* `./run pd [chat file] [start] [end]`
+	pd - or /plot dates/ will create a graph (using gnuplot),
+	plotting the ammount of messages over time. The first and 
+	the last date will be extracted automatically, and generally
+	don't/shouldn't have to be changed.
 
 ---
 
