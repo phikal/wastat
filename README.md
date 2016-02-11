@@ -13,13 +13,13 @@ directory but can easily be changed.
 ## Commands:
 
 * `./run wo [chat file] [output file]`
-	wo - or /word output/ will output all words separately into
+	wo - or *word output* will output all words separately into
 	a file, by default `words.txt`
 * `./run wc [chat file] [output file]`
-	wc - or /word count/ will count how often what word was used
+	wc - or *word count* will count how often what word was used
 	and output the results, sorted, by default, into `words.lis`
 * `./run uc [chat file] [output file]`
-	uc - or /user count/ will count how often which user sent a
+	uc - or *user count* will count how often which user sent a
 	message and output the results, sorted, by default, into `users.lis`
 ---
 
