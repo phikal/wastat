@@ -15,6 +15,10 @@ show_help () {
 	echo "		output all words separately"
 	echo "		default chat file: chat.txt or 2 argument"
 	echo "		default output: words.txt or 3 argument"
+	echo "	user-count, uc:"
+	echo "		count ammount of messages per user"
+	echo "		default chat file: chat.txt or 2 argument"
+	echo "		default output: users.lis or 3 argument"
 	echo "	help, -h:"
 	echo "		this message"
 }
@@ -22,6 +26,16 @@ show_help () {
 show_error () {
 	echo invalid command
 	show_help
+}
+
+user_count () {
+	INPUT=${1:-chat.txt}
+	OUTPUT=${2:-users.lis}
+
+	echo "Using $INPUT to count users into $OUTPUT"
+	# extract message | count | sort numerically
+	./wastat u $INPUT | ./lis | sort -nr > $OUTPUT
+	echo "Finished counting users with $(cat $OUTPUT | wc -l) users"
 }
 
 word_output () {
@@ -47,6 +61,7 @@ word_count () {
 case "$1" in
 	word-count|wc) shift; 	word_count "$@";;
 	word-output|wo) shift; 	word_output "$@";;
+	user-count|uc) shift; 	user_count "$@";;
 	help|-h) shift; 	show_help "$@";;
 	*) shift; 		show_error "$@";;
 esac

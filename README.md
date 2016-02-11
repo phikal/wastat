@@ -18,7 +18,9 @@ directory but can easily be changed.
 * `./run wc [chat file] [output file]`
 	wc - or /word count/ will count how often what word was used
 	and output the results, sorted, by default, into `words.lis`
-
+* `./run uc [chat file] [output file]`
+	uc - or /user count/ will count how often which user sent a
+	message and output the results, sorted, by default, into `users.lis`
 ---
 
 License:	MIT
