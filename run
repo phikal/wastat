@@ -1,5 +1,8 @@
 #!/usr/bin/sh
 
+# wastat toolkit script
+# license: MIT (see LICENSE)
+
 show_help () {
 	echo wastat v0.1, by phikal
 	echo
