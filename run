@@ -1,0 +1,46 @@
+#!/usr/bin/sh --debugger
+
+show_help () {
+	echo wastat v0.1
+	echo
+	echo usage:
+	echo "	word-count, wc:"
+	echo "		count word occurances"
+	echo "		default chat file: chat.txt or 2 argument"
+	echo "		default output: words.lis or 3 argument"
+	echo "	help, -h:"
+	echo "		this message"
+}
+
+show_error () {
+	echo invalid command
+	show_help
+}
+
+word_output () {
+	INPUT=${2:-chat.txt}
+	OUTPUT=${3:-words.txt}
+
+	echo "Using $INPUT to extract words into $OUTPUT"
+	# extract message | extract words | to upper to lower case
+	./wastat m $INPUT | grep -E -o "\w+" | tr [:upper:] [:lower:] > $OUTPUT
+	echo "Finished word output with $(cat $OUTPUT | wc -l) words."
+}
+
+word_count () {
+	INPUT=${2:-chat.txt}
+	OUTPUT=${3:-words.lis}
+
+	echo "Using $INPUT to count words and save result into $OUTPUT"
+	# extract message | extract words | to upper to lower case | count | sort numerically
+	./wastat m $INPUT | grep -E -o "\w+" | tr [:upper:] [:lower:] | ./lis | sort -nr > $OUTPUT
+	echo "Finished word count with $(cat $OUTPUT | wc -l) different words."
+}
+
+case "$1" in
+	word-count|wc) shift; 	word_count "$@";;
+	word-output|wo) shift; 	word_output "$@";;
+	help|-h) shift; 	show_help "$@";;
+	*) shift; 		show_error "$@";;
+esac
+exit 0

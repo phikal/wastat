@@ -1,0 +1,3 @@
+#!/usr/bin/perl
+chomp and $w{$_}++ while <>;
+printf "%-4d\t%s\n", $w{$_}, $_ for keys(%w);
