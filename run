@@ -3,6 +3,8 @@
 # wastat toolkit script
 # license: MIT (see LICENSE)
 
+alias errcho='>&2 echo'
+
 show_help () {
 	echo wastat v0.1, by phikal
 	echo
@@ -11,51 +13,103 @@ show_help () {
 	echo "		count word occurances"
 	echo "		default chat file: chat.txt or 2 argument"
 	echo "		default output: words.lis or 3 argument"
+	echo "		-o option forces run to also print to STDOUT"
 	echo "	word-output, wo:"
 	echo "		output all words separately"
 	echo "		default chat file: chat.txt or 2 argument"
 	echo "		default output: words.txt or 3 argument"
+	echo "		-o option forces run to also print to STDOUT"
 	echo "	user-count, uc:"
 	echo "		count ammount of messages per user"
 	echo "		default chat file: chat.txt or 2 argument"
 	echo "		default output: users.lis or 3 argument"
+	echo "		-o option forces run to also print to STDOUT"
 	echo "	help, -h:"
 	echo "		this message"
 }
 
 show_error () {
-	echo invalid command
+	errcho invalid command
 	show_help
 }
 
 user_count () {
-	INPUT=${1:-chat.txt}
-	OUTPUT=${2:-users.lis}
+	if [ "$1" = '-o' ]
+	then
+		INPUT=${2:-chat.txt}
+		OUTPUT=${3:-users.lis}
+		OUT=1
+	elif [ "$2" = '-o' ]
+	then
+		INPUT=${1:-chat.txt}
+		OUTPUT=${3:-users.lis}
+		OUT=1
+	else
+		INPUT=${1:-chat.txt}
+		OUTPUT=${2:-users.lis}
+	fi
 
-	echo "Using $INPUT to count users into $OUTPUT"
+	errcho "Using $INPUT to count users into $OUTPUT"
 	# extract message | count | sort numerically
 	./wastat u $INPUT | ./lis | sort -nr > $OUTPUT
-	echo "Finished counting users with $(cat $OUTPUT | wc -l) users"
+	if [ $OUT ]
+	then
+		cat $OUTPUT
+	fi
+	errcho "Finished counting users with $(cat $OUTPUT | wc -l) users"
 }
 
 word_output () {
-	INPUT=${1:-chat.txt}
-	OUTPUT=${2:-words.txt}
+	if [ "$1" = '-o' ]
+	then
+		INPUT=${2:-chat.txt}
+		OUTPUT=${3:-users.lis}
+		OUT=1
+	elif [ "$2" = '-o' ]
+	then
+		INPUT=${1:-chat.txt}
+		OUTPUT=${3:-users.lis}
+		OUT=1
+	else
+		INPUT=${1:-chat.txt}
+		OUTPUT=${2:-users.lis}
+	fi
 
-	echo "Using $INPUT to extract words into $OUTPUT"
+
+	errcho "Using $INPUT to extract words into $OUTPUT"
 	# extract message | extract words | to upper to lower case
 	./wastat m $INPUT | grep -E -o "\w+" | tr [:upper:] [:lower:] > $OUTPUT
-	echo "Finished word output with $(cat $OUTPUT | wc -l) words."
+	if [ $OUT ]
+	then
+		cat $OUTPUT
+	fi
+	errcho "Finished word output with $(cat $OUTPUT | wc -l) words."
 }
 
 word_count () {
-	INPUT=${1:-chat.txt}
-	OUTPUT=${2:-words.lis}
+	if [ "$1" = '-o' ]
+	then
+		INPUT=${2:-chat.txt}
+		OUTPUT=${3:-users.lis}
+		OUT=1
+	elif [ "$2" = '-o' ]
+	then
+		INPUT=${1:-chat.txt}
+		OUTPUT=${3:-users.lis}
+		OUT=1
+	else
+		INPUT=${1:-chat.txt}
+		OUTPUT=${2:-users.lis}
+	fi
 
-	echo "Using $INPUT to count words and save result into $OUTPUT"
+	errcho "Using $INPUT to count words and save result into $OUTPUT"
 	# extract message | extract words | to upper to lower case | count | sort numerically
 	./wastat m $INPUT | grep -E -o "\w+" | tr [:upper:] [:lower:] | ./lis | sort -nr > $OUTPUT
-	echo "Finished word count with $(cat $OUTPUT | wc -l) different words."
+	if [ $OUT ]
+	then
+		cat $OUTPUT
+	fi
+	errcho "Finished word count with $(cat $OUTPUT | wc -l) different words."
 }
 
 case "$1" in
