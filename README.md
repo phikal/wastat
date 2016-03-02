@@ -23,6 +23,9 @@ directory but can easily be changed.
 	plotting the ammount of messages over time. The first and 
 	the last date will be extracted automatically, and generally
 	don't/shouldn't have to be changed.
+* `./run pt [chat file]`
+	pt - or /plot times/ will create a graph (using gnuplot),
+	plotting the accumulative ammount of messages over all days.
 
 ---
 

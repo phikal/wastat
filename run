@@ -17,6 +17,16 @@ show_help () {
 	echo "		default chat file: chat.txt or 2nd argument"
 	echo "		the first and last date automatically extracted"
 	echo "		can be manaully set as 3rd and 4th argument"
+	echo "	plot-users, pu:"
+	echo "		plot all users' dates individually"
+	echo "		default chat file: chat.txt or 2nd argument"
+	echo "		the first and last date automatically extracted"
+	echo "		can be manaully set as 3rd and 4th argument"
+	echo "		programm will Query users to be plotted from stdin"
+	echo "	plot-times, pt:"
+	echo "		plot accumalative ammount of messages sent over all days"
+	echo "		default chat file: chat.txt or 2nd argument"
+	echo
 	echo "	help, -h:"
 	echo "		this message"
 }
@@ -24,6 +34,40 @@ show_help () {
 show_error () {
 	echo invalid command
 	show_help
+}
+
+plot_times () {
+	if ! type gnuplot > /dev/null; then
+		echo "gnuplot is needed to plot the data"
+		exit 1
+	fi	
+
+	INPUT=${1:-chat.txt}
+
+	echo "Using $INPUT to plot accumulative message count over all days"
+	./wastat time $INPUT | ./lis | ./fmt $START $END > date.dat
+	echo "Finished extraction, opening gnuplot..."
+	gnuplot -p times.gp
+}
+
+plot_users () {
+	if ! type gnuplot > /dev/null; then
+		echo "gnuplot is needed to plot the data"
+		exit 1
+	fi	
+
+	INPUT=${1:-chat.txt}
+
+	FIRST=$(head -1 $INPUT | sed 's/,.*$//')
+	LAST=$(tail -1 $INPUT | sed 's/,.*$//')
+
+	START=${2:-$FIRST}
+	END=${3:-$LAST}
+	
+	echo "Using $INPUT to plot message count over time from $START to $END"
+	./wastat date $INPUT | ./lis | ./fmd $START $END > date.dat
+	echo "Finished extraction, opening gnuplot..."
+	gnuplot -p indiv.gp
 }
 
 plot_dates () {
@@ -43,7 +87,7 @@ plot_dates () {
 	echo "Using $INPUT to plot message count over time from $START to $END"
 	./wastat date $INPUT | ./lis | ./fmd $START $END > date.dat
 	echo "Finished extraction, opening gnuplot..."
-	gnuplot -p all.gp
+	gnuplot -p dates.gp
 }
 
 word_count () {
@@ -70,6 +114,8 @@ case "$1" in
 	word-count|wc) shift; 	word_count "$@";;
 	word-output|wo) shift; 	word_output "$@";;
 	plot-dates|pd) shift; 	plot_dates "$@";;
+	plot-users|pu) shift; 	plot_users "$@";;
+	plot-times|pt) shift; 	plot_times "$@";;
 	help|-h) shift; 	show_help "$@";;
 	*) shift; 		show_error "$@";;
 esac
