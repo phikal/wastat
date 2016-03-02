@@ -3,39 +3,31 @@
 # fill missing times (and sort)
 # licence: MIT (see LICENSE)
 
-import datetime
-import time
 import sys
-import fileinput
 import re
+from datetime import datetime, timedelta
 
-form = "%I:%M %p"
-day = datetime.timedelta(seconds=60)
-if sys.argv[1] is not '-':
-	prev = datetime.datetime.strptime(sys.argv[1], form)
-else:
-	prev = datetime.datetime.strptime("12:00 am", form)
-if sys.argv[2] is not '-':
-	end = datetime.datetime.strptime(sys.argv[2], form)
-else:
-	prev = datetime.datetime.strptime("11:59 pm", form)
+FORM = "%I:%M %p"
+MINUTE = timedelta(minutes=1)
 
-pattern = re.compile(r"^\s*(.*)\s+(\d{2}:\d{2} (?:am|pm))")
+PREV = datetime.strptime("12:00 am", FORM)
+PATTERN = re.compile(r"^\s*(.*?)\s+(\d{1,2}:\d{2} (?:am|pm))")
 
-items = []
+ITEMS = []
+
 for line in sys.stdin:
-	match = pattern.match(line)
-	if not match:
-		continue
-	ds = match.group(2)
-	date = datetime.datetime.strptime(ds, form).timestamp()
-	items.append((date, match.group(1)))
+    match = PATTERN.match(line)
+    if not match:
+        continue
+    ds = match.group(2)
+    date = datetime.strptime(ds, FORM)
+    ITEMS.append((date, match.group(1)))
 
-items.sort(key=lambda x: x[0])
-for i in items:
-	date = datetime.datetime.utcfromtimestamp(i[0])
-	while prev < date-day:
-		print("{}\t{}".format(0, prev.strftime(form)))
-		prev += day
-	print("{}\t{}".format(i[1], date.strftime(form)))
-	prev += day
+FORM = "%H:%M"
+ITEMS.sort(key=lambda x: x[0])
+for now in ITEMS:
+    while PREV < now[0]:
+        print("{}\t{}".format(0, datetime.strftime(PREV, FORM)))
+        PREV += MINUTE
+    print("{}\t{}".format(now[1], datetime.strftime(now[0], FORM)))
+    PREV += MINUTE
