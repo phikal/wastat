@@ -31,7 +31,8 @@ show_help () {
     echo "	plot-times, pt:"
     echo "		plot accumalative ammount of messages sent over all days"
     echo "		default chat file: chat.txt or 2nd argument"
-    echo
+    echo "	clean"
+    echo "		remove all generated content from direcory"
     echo "	help, -h:"
     echo "		this message"
 }
@@ -159,12 +160,20 @@ word_output () {
     echo "Finished word output with $(cat $OUTPUT | wc -l) words."
 }
 
+clean() {
+    rm *.dat 2> /dev/null
+    rm indiv.gp 2> /dev/null
+    rm words.* 2> /dev/null
+    echo "Clean up."
+}
+
 case "$1" in
     word-count|wc) shift; 	word_count "$@";;
     word-output|wo) shift; 	word_output "$@";;
     plot-dates|pd) shift; 	plot_dates "$@";;
     plot-users|pu) shift; 	plot_users "$@";;
     plot-times|pt) shift; 	plot_times "$@";;
+    clean)                      clean;;
     help|-h) shift; 	show_help "$@";;
     *) shift; 		show_error "$@";;
 esac

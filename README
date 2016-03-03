@@ -41,6 +41,8 @@ $ ./run pu [chat file] [start] [end]
 	automatically, and generally don't/shouldn't have to be changed.
 	The script will ask you which users to include, and which not to.
 	You will either be able to accept, modify (change name) or ignore.
+$ ./run clean
+  	This command removes all files that ./run might have generated.
 
 ---
 
