@@ -1,3 +1,5 @@
 #!/usr/bin/perl
+# simple and short perl line occurence counter - sasploc or, of obviously lis
+# license: MIT (see LICENSE)
 chomp and $w{$_}++ while <>;
 printf "%-4d\t%s\n", $w{$_}, $_ for keys(%w);

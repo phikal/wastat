@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+# wastat - whatsapp extraction tool
+# License: MIT (see LICENSE)
+
 use strict;
 use warnings;
 

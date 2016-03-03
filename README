@@ -1,0 +1,50 @@
+WASTAT - WhatsApp statistics - is a toolset to extract,
+and analyse data from WhatsApp chats, revived in US-Time
+(MM/DD/YYYY). These can be obtained by sending sending 
+the chat in question via email, f.e. to yourself
+(Android: In chat -> options -> more -> email chat).
+
+How to use
+==========
+
+To simplify usage, the `run` script exists. This script always 
+assumes that the chat is saved as `chat.txt` in the current
+directory but can easily be changed.
+
+Commands
+=======
+
+$ ./run wo [chat file] [output file]
+	wo - or *word output* will output all words separately into
+	a file, by default `words.txt`
+	if -o is mentioned, data will also be outputted to STDOUT
+$ ./run wc [chat file] [output file]
+	wc - or *word count* will count how often what word was used
+	if -o is mentioned, data will also be outputted to STDOUT
+	and output the results, sorted, by default, into `words.lis`
+$ ./run uc [chat file] [output file] [-o]
+	uc - or *user count* will count how often which user sent a
+	message and output the results, sorted, by default, into `users.lis`
+	if -o is mentioned, data will also be outputted to STDOUT
+$ ./run pt [chat file]
+	pt - or /plot times/ will create a graph (using gnuplot),
+	plotting the accumulative ammount of messages over all days.
+$ ./run pd [chat file] [start] [end]
+	pd - or /plot dates/ will create a graph (using gnuplot),
+	plotting the ammount of messages over time. The first and 
+	the last date will be extracted automatically, and generally
+	don't/shouldn't have to be changed.
+$ ./run pu [chat file] [start] [end]
+	pd - or /plot users/ will create a graph (using gnuplot),
+	plotting the ammount of messages over time, for each participant
+	individually. The first and  the last date will be extracted
+	automatically, and generally don't/shouldn't have to be changed.
+	The script will ask you which users to include, and which not to.
+	You will either be able to accept, modify (change name) or ignore.
+
+---
+
+License:     MIT
+Version:     0.2
+Last update: 04.03.2016
+Author:	     Philip Kaludercic <philippija@gmail.com>

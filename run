@@ -1,5 +1,8 @@
 #!/usr/bin/sh
 
+# wastat toolkit script
+# license: MIT (see LICENSE)
+
 PATH=$PATH:.
 
 show_help () {
