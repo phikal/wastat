@@ -8,51 +8,70 @@ use warnings;
 
 $|++;
 
-# command - get what to do
-my $C = shift @ARGV;
+# locale to convert from
+my $L = lc shift @ARGV;
 
-print "$0: Converts whatsapp chats from * to US Format
+print "$0: Converts whatsapp chats from * to 24h&co. Format
 Usage: $0 [lang] [chat file]
 
-Supported languages:
+Supported locale:
 	de:	convert from german
-" and exit if $C =~ /^(h|$)/ or not @ARGV;
+	us:	convert from us format (MM/DD/YYYY)
+" and exit if $L =~ /^(h|$)/ or not @ARGV;
 
-die "No such command\n"
-	unless $C =~ /^de/;
+die "Locale not supported\n"
+	unless $L =~ /^de|us/;
 
 # line, time and date regex
 my ($tre, $dre, $lre);
 
-if ($C eq "de") {
+if ($L eq "de") {
   $dre = qr{(\d{2}).(\d{2}).(\d{4})};
   $tre = qr{(\d{1,2}):(\d{2}) (vorm|nachm).};
   $lre = qr{^(\d{2}\.\d{2}\.\d{4}), (\d{1,2}:\d{2} (?:vorm|nachm)\.) - ([^:]*): (.*)$};
+} elsif ($L eq "us") {
+  $dre = qr{(\d{2})/(\d{2})/(\d{4})};
+  $tre = qr{(\d{1,2}):(\d{2}) (am|pm)};
+  $lre = qr{^(\d{2}/\d{2}/\d{4}), (\d{1,2}:\d{2} (?:am|pm)) - ([^:]*): (.*)$};
 }
 
 sub cd { # convert date
   my ($date) = @_;
   if ($date =~ m/$dre/) {
     my ($day, $month, $year) = ($1, $2, $3);
-    return "$month/$day/$year";
+    return "$day/$month/$year";
   }
+}
+
+sub cXXtAM { # convert any variation of AM/PM to standard AM/PM
+  my $time = shift @_;
+  if ($time =~ m/$tre/) {
+    my $noon;
+    $noon = $3 eq "vorm" ? "am" : "pm" if $L eq "de";
+    $noon = $3  if $L eq "us";
+    return "$1:$2 $noon";
+  } else { return $time; }
+}
+
+sub c12t24 { # convert 12h to 24h
+  chomp(my $x = shift @_);
+  my @t = split(/[: ]/, $x);
+  $t[0]= $t[0] + 12 if $t[2] eq "pm" and $t[0] < 12;
+  $t[0]= 0 if $t[0] == 12 and $t[2] eq "am";
+  return $t[0], $t[1];
 }
 
 sub ct { # covert time
   my ($time) = @_;
   if ($time =~ m/$tre/) {
-    my ($hour, $min, $noon_) = ($1, $2, $3);
-
-    my $noon = "pm";
-    $noon = "am" if $C eq "de" and $noon_ eq "vorm";
-
-    return "$hour:$min $noon";
+    my ($hour, $min) = c12t24(cXXtAM($time));
+    return "$hour:$min";
   }
 }
 
 while (<>) {
   chomp;
-  next unless m/$lre/gx;
+  next unless (m/$lre/gx);
   my ($date, $time, $user, $message) = (&cd($1), &ct($2), $3, $4);
   print "$date, $time - $user: $message\n";
 }

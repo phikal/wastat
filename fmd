@@ -13,7 +13,7 @@ if len(sys.argv) < 3:
 	print("usage: prog | fmd [start date] [end date]")
 	quit()
 
-form = "%m/%d/%Y"
+form = "%d/%m/%Y"
 day = datetime.timedelta(days=1)
 prev = datetime.datetime.strptime(sys.argv[1], form)
 end = datetime.datetime.strptime(sys.argv[2], form)

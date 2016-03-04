@@ -58,7 +58,8 @@ $ ./waconv de chat_datei.txt > chat_file.txt
 This will convert the german "chat_datei.txt" to the english
 "chat_file.txt".
 
-Currently the following locales are supported: German (de).
+Currently the following locales are supported: German (de),
+United States format [MM/DD/YYY] (us).
 
 ---
 

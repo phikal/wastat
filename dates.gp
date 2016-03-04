@@ -1,5 +1,5 @@
-set timefmt "%m/%d/%Y"
-set format x "%m/%d"
+set timefmt "%d/%m/%Y"
+set format x "%d/%m"
 set xdata time
 
 set grid
