@@ -1,0 +1,58 @@
+#!/usr/bin/perl
+
+# waconv - whatsapp conversion tool
+# License: MIT (see LICENSE)
+
+use strict;
+use warnings;
+
+$|++;
+
+# command - get what to do
+my $C = shift @ARGV;
+
+print "$0: Converts whatsapp chats from * to US Format
+Usage: $0 [lang] [chat file]
+
+Supported languages:
+	de:	convert from german
+" and exit if $C =~ /^(h|$)/ or not @ARGV;
+
+die "No such command\n"
+	unless $C =~ /^de/;
+
+# line, time and date regex
+my ($tre, $dre, $lre);
+
+if ($C eq "de") {
+  $dre = qr{(\d{2}).(\d{2}).(\d{4})};
+  $tre = qr{(\d{1,2}):(\d{2}) (vorm|nachm).};
+  $lre = qr{^(\d{2}\.\d{2}\.\d{4}), (\d{1,2}:\d{2} (?:vorm|nachm)\.) - ([^:]*): (.*)$};
+}
+
+sub cd { # convert date
+  my ($date) = @_;
+  if ($date =~ m/$dre/) {
+    my ($day, $month, $year) = ($1, $2, $3);
+    return "$month/$day/$year";
+  }
+}
+
+sub ct { # covert time
+  my ($time) = @_;
+  if ($time =~ m/$tre/) {
+    my ($hour, $min, $noon_) = ($1, $2, $3);
+
+    my $noon = "pm";
+    $noon = "am" if $C eq "de" and $noon_ eq "vorm";
+
+    return "$hour:$min $noon";
+  }
+}
+
+while (<>) {
+  chomp;
+  next unless m/$lre/gx;
+  my ($date, $time, $user, $message) = (&cd($1), &ct($2), $3, $4);
+  print "$date, $time - $user: $message\n";
+}
