@@ -28,6 +28,10 @@ show_help () {
     echo "		the first and last date automatically extracted"
     echo "		can be manaully set as 3rd and 4th argument"
     echo "		programm will Query users to be plotted from stdin"
+    echo "	plot-user-times, put:"
+    echo "		plot accumalative ammount of messages sent over all days individually"
+    echo "		default chat file: chat.txt"
+    echo "		programm will Query users to be plotted from stdin"
     echo "	plot-times, pt:"
     echo "		plot accumalative ammount of messages sent over all days"
     echo "		default chat file: chat.txt or 2nd argument"
@@ -56,6 +60,65 @@ plot_times () {
     gnuplot -p times.gp
 }
 
+
+plot_user_times () {
+    if ! type gnuplot > /dev/null; then
+	echo "gnuplot is needed to plot the data"
+	exit 1
+    fi
+
+    INPUT=${1:-chat.txt}
+
+    echo "Using $INPUT to plot accumulative message count over all days"
+    echo "You will be presented a list of all individual partipants from $INPUT"
+    echo "Please [c]onfirm or [m]odify user names (anything else is ignored)"
+
+    cp indiv_t.gp.templ indiv_t.gp
+
+    COUNT=0
+    for user in $(./waextr u $INPUT | sort | uniq | sed 's/ /_/g'); do
+            printf "%s\t\t[c/m/*]: " $user
+	    read -N 1 choice
+	    echo
+
+	    ouser=$(echo $user | sed 's/_/ /g')
+	    name=$ouser
+	    
+	    case "$choice" in
+		c) ;;
+		m)  printf "Enter alias: "
+		    read name;;
+		*) continue ;;
+	    esac
+
+	    ./waextr eud $INPUT |\
+		grep "$ouser" |\
+		sed 's/^.*\t//' |\
+		./lis |\
+		./fmt > "$user.dat"
+	    printf " (%s)" $(cat "$user.dat" 2> /dev/null | wc -l)
+	    
+	    if test $COUNT -eq 0; then
+		printf "p" >> indiv_t.gp
+	    else
+		printf "," >> indiv_t.gp
+	    fi
+	    
+	    printf "\\\\\n\t\"$user.dat\" u 2:1 t \"$name\"" >> indiv_t.gp
+	    COUNT=$(($COUNT+1))
+	    
+	    echo
+    done
+
+    if test $COUNT -eq 0; then
+	echo "It seems like you either didn't select anyone, or nobody could be selected...\nQuitting."
+	exit 1
+    fi
+    
+    echo "Finished extraction, opening gnuplot..."
+    gnuplot -p indiv_t.gp
+}
+
 plot_users () {
     if ! type gnuplot > /dev/null; then
 	echo "gnuplot is needed to plot the data"
@@ -74,7 +137,7 @@ plot_users () {
     echo "You will be presented a list of all individual partipants from $INPUT"
     echo "Please [c]onfirm or [m]odify user names (anything else is ignored)"
 
-    cp indiv.gp.templ indiv.gp	
+    cp indiv_d.gp.templ indiv_d.gp	
 
     COUNT=0
     for user in $(./waextr u $INPUT | sort | uniq | sed 's/ /_/g'); do
@@ -100,12 +163,12 @@ plot_users () {
 	    printf " (%s)" $(cat "$user.dat" 2> /dev/null | wc -l)
 	    
 	    if test $COUNT -eq 0; then
-		printf "p" >> indiv.gp
+		printf "p" >> indiv_d.gp
 	    else
-		printf "," >> indiv.gp
+		printf "," >> indiv_d.gp
 	    fi
 	    
-	    printf "\\\\\n\t\"$user.dat\" u 2:1 t \"$name\"" >> indiv.gp
+	    printf "\\\\\n\t\"$user.dat\" u 2:1 t \"$name\"" >> indiv_d.gp
 	    COUNT=$(($COUNT+1))
 	    
 	    echo
@@ -117,7 +180,7 @@ plot_users () {
     fi
     
     echo "Finished extraction, opening gnuplot..."
-    gnuplot -p indiv.gp
+    gnuplot -p indiv_d.gp
 }
 
 plot_dates () {
@@ -162,7 +225,7 @@ word_output () {
 
 clean() {
     rm *.dat 2> /dev/null
-    rm indiv.gp 2> /dev/null
+    rm indiv_{t,d}.gp 2> /dev/null
     rm words.* 2> /dev/null
     echo "Clean up."
 }
@@ -173,6 +236,7 @@ case "$1" in
     plot-dates|pd) shift; 	plot_dates "$@";;
     plot-users|pu) shift; 	plot_users "$@";;
     plot-times|pt) shift; 	plot_times "$@";;
+    plot-user-times|put) shift; plot_user_times "$@";;
     clean)                      clean;;
     help|-h) shift; 	show_help "$@";;
     *) shift; 		show_error "$@";;

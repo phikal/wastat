@@ -2,4 +2,5 @@
 *.png
 *.txt
 *.lis
-indiv.gp
+indiv_d.gp
+indiv_t.gp
