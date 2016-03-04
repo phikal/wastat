@@ -7,41 +7,41 @@ the chat in question via email, f.e. to yourself
 How to use
 ==========
 
-To simplify usage, the `run` script exists. This script always 
+To simplify usage, the `wastat` script exists. This script always 
 assumes that the chat is saved as `chat.txt` in the current
 directory but can easily be changed.
 
 Commands
 =======
 
-$ ./run wo [chat file] [output file]
+$ ./wastat wo [chat file] [output file]
 	wo - or *word output* will output all words separately into
 	a file, by default `words.txt`
 	if -o is mentioned, data will also be outputted to STDOUT
-$ ./run wc [chat file] [output file]
+$ ./wastat wc [chat file] [output file]
 	wc - or *word count* will count how often what word was used
 	if -o is mentioned, data will also be outputted to STDOUT
 	and output the results, sorted, by default, into `words.lis`
-$ ./run uc [chat file] [output file] [-o]
+$ ./wastat uc [chat file] [output file] [-o]
 	uc - or *user count* will count how often which user sent a
 	message and output the results, sorted, by default, into `users.lis`
 	if -o is mentioned, data will also be outputted to STDOUT
-$ ./run pt [chat file]
+$ ./wastat pt [chat file]
 	pt - or /plot times/ will create a graph (using gnuplot),
 	plotting the accumulative ammount of messages over all days.
-$ ./run pd [chat file] [start] [end]
+$ ./wastat pd [chat file] [start] [end]
 	pd - or /plot dates/ will create a graph (using gnuplot),
 	plotting the ammount of messages over time. The first and 
 	the last date will be extracted automatically, and generally
 	don't/shouldn't have to be changed.
-$ ./run pu [chat file] [start] [end]
+$ ./wastat pu [chat file] [start] [end]
 	pd - or /plot users/ will create a graph (using gnuplot),
 	plotting the ammount of messages over time, for each participant
 	individually. The first and  the last date will be extracted
 	automatically, and generally don't/shouldn't have to be changed.
 	The script will ask you which users to include, and which not to.
 	You will either be able to accept, modify (change name) or ignore.
-$ ./run clean
+$ ./wastat clean
   	This command removes all files that ./run might have generated.
 
 ---

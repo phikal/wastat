@@ -1,41 +1,180 @@
-#!/usr/bin/perl
+#!/usr/bin/sh
 
-# wastat - whatsapp extraction tool
-# License: MIT (see LICENSE)
+# wastat toolkit script
+# license: MIT (see LICENSE)
 
-use strict;
-use warnings;
+PATH=$PATH:.
 
-$|++;
-
-# command - get what to do
-my $C = shift @ARGV;
-
-print "$0: Extracts relevant data out of whatsapp messages
-Options (only first charachter required):
-	help:	this message
-	date:	print all dates per message
-	time:	print all times per message
-	users:	print all usernames per message
-	mess:	print all messages (only text)
-	pud:	print persons and dates
-	all:	print everything (tabbed)
-" and exit if $C =~ /^(h|$)/ or not @ARGV;
-
-die "No such command\n" 
-	if $C =~ /^[^hdtump]/;
-
-# loop through file
-while (<>) {
-	# only parse messages 
-	next unless /^(\d{2}[\/.]\d{2}[\/.]\d{4}), (\d{1,2}:\d{2} (?:am|pm)?) - ([^:]*): (.*)$/;
-	
-	my ($date, $time, $user, $mess) = ($1, $2, $3, $4);
-
-	$C =~ m/^d/i and print "$date\n"; 
-	$C =~ m/^t/i and print "$time\n"; 
-	$C =~ m/^u/i and print "$user\n"; 
-	$C =~ m/^m/i and print "$mess\n"; 
-	$C =~ m/^p/i and print "$user\t$date\n";
-	$C =~ m/^a/i and print "$date\t$time\t$user\t$mess\n";
+show_help () {
+    echo wastat toolkit v0.1, by phikal
+    echo
+    echo usage:
+    echo "	word-count, wc:"
+    echo "		count word occurances"
+    echo "		default chat file: chat.txt or 2nd argument"
+    echo "		default output: words.lis or 3rd argument"
+    echo "	word-output, wo:"
+    echo "		output all words separately"
+    echo "		default chat file: chat.txt or 2nd argument"
+    echo "		default output: words.txt or 3rd argument"
+    echo "	plot-dates, pd:"
+    echo "		plot all dates"
+    echo "		default chat file: chat.txt or 2nd argument"
+    echo "		the first and last date automatically extracted"
+    echo "		can be manaully set as 3rd and 4th argument"
+    echo "	plot-users, pu:"
+    echo "		plot all users' dates individually"
+    echo "		default chat file: chat.txt or 2nd argument"
+    echo "		the first and last date automatically extracted"
+    echo "		can be manaully set as 3rd and 4th argument"
+    echo "		programm will Query users to be plotted from stdin"
+    echo "	plot-times, pt:"
+    echo "		plot accumalative ammount of messages sent over all days"
+    echo "		default chat file: chat.txt or 2nd argument"
+    echo "	clean"
+    echo "		remove all generated content from direcory"
+    echo "	help, -h:"
+    echo "		this message"
 }
+
+show_error () {
+    echo invalid command
+    show_help
+}
+
+plot_times () {
+    if ! type gnuplot > /dev/null; then
+	echo "gnuplot is needed to plot the data"
+	exit 1
+    fi	
+
+    INPUT=${1:-chat.txt}
+
+    echo "Using $INPUT to plot accumulative message count over all days"
+    ./waextr time $INPUT | ./lis | ./fmt > time.dat
+    echo "Finished extraction, opening gnuplot..."
+    gnuplot -p times.gp
+}
+
+plot_users () {
+    if ! type gnuplot > /dev/null; then
+	echo "gnuplot is needed to plot the data"
+	exit 1
+    fi
+
+    INPUT=${1:-chat.txt}
+
+    FIRST=$(head -1 $INPUT | sed 's/,.*$//')
+    LAST=$(tail -1 $INPUT | sed 's/,.*$//')
+
+    START=${2:-$FIRST}
+    END=${3:-$LAST}
+
+    echo "Using $INPUT to plot $COUNT users over time from $START to $END"
+    echo "You will be presented a list of all individual partipants from $INPUT"
+    echo "Please [c]onfirm or [m]odify user names (anything else is ignored)"
+
+    cp indiv.gp.templ indiv.gp	
+
+    COUNT=0
+    for user in $(./waextr u $INPUT | sort | uniq | sed 's/ /_/g'); do
+            printf "%s\t\t[c/m/*]: " $user
+	    read -N 1 choice
+	    echo
+
+	    ouser=$(echo $user | sed 's/_/ /g')
+	    name=$ouser
+	    
+	    case "$choice" in
+		c) ;;
+		m)  printf "Enter alias: "
+		    read name;;
+		*) continue ;;
+	    esac
+	    
+	    ./waextr pud $INPUT |\
+		grep "$ouser" |\
+		sed 's/^.*\t//' |\
+		lis |\
+		fmd $START $END > "$user.dat"
+	    printf " (%s)" $(cat "$user.dat" 2> /dev/null | wc -l)
+	    
+	    if test $COUNT -eq 0; then
+		printf "p" >> indiv.gp
+	    else
+		printf "," >> indiv.gp
+	    fi
+	    
+	    printf "\\\\\n\t\"$user.dat\" u 2:1 t \"$name\"" >> indiv.gp
+	    COUNT=$(($COUNT+1))
+	    
+	    echo
+    done
+
+    if test $COUNT -eq 0; then
+	echo "It seems like you either didn't select anyone, or nobody could be selected...\nQuitting."
+	exit 1
+    fi
+    
+    echo "Finished extraction, opening gnuplot..."
+    gnuplot -p indiv.gp
+}
+
+plot_dates () {
+    if ! type gnuplot > /dev/null; then
+	echo "gnuplot is needed to plot the data"
+	exit 1
+    fi	
+
+    INPUT=${1:-chat.txt}
+
+    FIRST=$(head -1 $INPUT | sed 's/,.*$//')
+    LAST=$(tail -1 $INPUT | sed 's/,.*$//')
+
+    START=${2:-$FIRST}
+    END=${3:-$LAST}
+
+    echo "Using $INPUT to plot message count over time from $START to $END"
+    ./waextr date $INPUT | ./lis | ./fmd $START $END > date.dat
+    echo "Finished extraction, opening gnuplot..."
+    gnuplot -p dates.gp
+}
+
+word_count () {
+    INPUT=${1:-chat.txt}
+    OUTPUT=${2:-words.lis}
+
+    echo "Using $INPUT to count words and save result into $OUTPUT"
+    # extract message | extract words | to upper to lower case | count | sort numerically
+    ./waextr m $INPUT | grep -E -o "\w+" | tr [:upper:] [:lower:] | ./lis | sort -nr > $OUTPUT
+    echo "Finished word count with $(cat $OUTPUT | wc -l) different words."
+}
+
+word_output () {
+    INPUT=${1:-chat.txt}
+    OUTPUT=${2:-words.txt}
+
+    echo "Using $INPUT to extract words into $OUTPUT"
+    # extract message | extract words | to upper to lower case
+    ./waextr m $INPUT | grep -E -o "\w+" | tr [:upper:] [:lower:] > $OUTPUT
+    echo "Finished word output with $(cat $OUTPUT | wc -l) words."
+}
+
+clean() {
+    rm *.dat 2> /dev/null
+    rm indiv.gp 2> /dev/null
+    rm words.* 2> /dev/null
+    echo "Clean up."
+}
+
+case "$1" in
+    word-count|wc) shift; 	word_count "$@";;
+    word-output|wo) shift; 	word_output "$@";;
+    plot-dates|pd) shift; 	plot_dates "$@";;
+    plot-users|pu) shift; 	plot_users "$@";;
+    plot-times|pt) shift; 	plot_times "$@";;
+    clean)                      clean;;
+    help|-h) shift; 	show_help "$@";;
+    *) shift; 		show_error "$@";;
+esac
+exit 0
