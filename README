@@ -44,6 +44,22 @@ $ ./wastat pu [chat file] [start] [end]
 $ ./wastat clean
   	This command removes all files that ./run might have generated.
 
+Non-English Files
+=================
+
+Wastat expects the english file format to be used, and
+therfore non-english chat logs have to be converted first
+with "waconv". This script requires one argument to set the
+incoming language, and will then convert any files from ARGV
+or STDIN. The result will to redirected to STDOUT. Example:
+
+$ ./waconv de chat_datei.txt > chat_file.txt
+
+This will convert the german "chat_datei.txt" to the english
+"chat_file.txt".
+
+Currently the following locales are supported: German (de).
+
 ---
 
 License:     MIT
