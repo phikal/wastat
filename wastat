@@ -80,7 +80,7 @@ plot_user_times () {
     errcho "You will be presented a list of all individual partipants from $INPUT"
     errcho "Please [c]onfirm or [m]odify user names (anything else is ignored)"
 
-    cp indiv_t.gp.templ indiv_t.gp
+    cp indiv_t.templ.gp indiv_t.gp
 
     COUNT=0
     for user in $(./waextr u $INPUT | sort | uniq | sed 's/ /_/g'); do
@@ -144,7 +144,7 @@ plot_users () {
     errcho "You will be presented a list of all individual partipants from $INPUT"
     errcho "Please [c]onfirm or [m]odify user names (anything else is ignored)"
 
-    cp indiv_d.gp.templ indiv_d.gp	
+    cp indiv_d.templ.gp indiv_d.gp	
 
     COUNT=0
     for user in $(./waextr u $INPUT | sort | uniq | sed 's/ /_/g'); do
