@@ -18,7 +18,7 @@ day = datetime.timedelta(days=1)
 prev = datetime.datetime.strptime(sys.argv[1], form)
 end = datetime.datetime.strptime(sys.argv[2], form)
 
-pattern = re.compile(r"^(.*)\t(\d{2}/\d{2}/\d{4})")
+pattern = re.compile(r"^\s*(.*)\s+(\d{2}/\d{2}/\d{4})")
 
 items = []
 for line in sys.stdin:
