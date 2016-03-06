@@ -62,7 +62,7 @@ plot_times () {
     INPUT=${1:-chat.txt}
 
     errcho "Using $INPUT to plot accumulative message count over all days"
-    ./waextr time $INPUT | ./lis | ./fmt > time.dat
+    ./waextr time $INPUT | sort | uniq -c | ./fmt > time.dat
     errcho "Finished extraction, opening gnuplot..."
     gnuplot -p times.gp
 }
@@ -101,7 +101,7 @@ plot_user_times () {
 	./waextr eud $INPUT |\
 	    grep "$ouser" |\
 	    sed 's/^.*\t//' |\
-	    ./lis |\
+	    sort | uniq -c |\
 	    ./fmt > "$user.dat"
 	printf " (%s)" $(cat "$user.dat" 2> /dev/null | wc -l)
 	
@@ -165,7 +165,7 @@ plot_users () {
 	./waextr pud $INPUT |\
 	    grep "$ouser" |\
 	    sed 's/^.*\t//' |\
-	    lis |\
+	    sort | uniq -c |\
 	    fmd $START $END > "$user.dat"
 	printf " (%s)" $(cat "$user.dat" 2> /dev/null | wc -l)
 	
@@ -205,7 +205,7 @@ plot_dates () {
     END=${3:-$LAST}
 
     errcho "Using $INPUT to plot message count over time from $START to $END"
-    ./waextr date $INPUT | ./lis | ./fmd $START $END > date.dat
+    ./waextr date $INPUT | sort | uniq -c | ./fmd $START $END > date.dat
     errcho "Finished extraction, opening gnuplot..."
     gnuplot -p dates.gp
 }
@@ -226,7 +226,7 @@ user_count () {
 
     errcho "Using $INPUT to count users into $OUTPUT"
     # extract message | count | sort numerically
-    ./waextr u $INPUT | ./lis | sort -nr > $OUTPUT
+    ./waextr u $INPUT | sort | uniq -c | sort -nr > $OUTPUT
     if [ $OUT ]
     then
 	cat $OUTPUT
@@ -275,7 +275,7 @@ word_count () {
 
     errcho "Using $INPUT to count words and save result into $OUTPUT"
     # extract message | extract words | to upper to lower case | count | sort numerically
-    ./waextr m $INPUT | grep -E -o "\w+" | tr [:upper:] [:lower:] | ./lis | sort -nr > $OUTPUT
+    ./waextr m $INPUT | grep -E -o "\w+" | tr [:upper:] [:lower:] | sort | uniq -c | sort -nr > $OUTPUT
     if [ $OUT ]; then
 	cat $OUTPUT
     fi
