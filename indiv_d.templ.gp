@@ -4,9 +4,9 @@ set xdata time
 
 set grid
 set autoscale y
-set title "Anzahl der Nachrichten im \"Chat\" ü Zeit"
-set xlabel "Datum"
-set ylabel "Anzahl an Nachrichten"
+set title "Amount of messages in \"chat\" over time"
+set xlabel "Date"
+set ylabel "Message count"
 set ytic auto
 unset log
 unset label
