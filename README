@@ -78,6 +78,21 @@ Currently the following locales are supported:
 * German (de),
 * United States format [MM/DD/YYY] (us).
 
+Examples
+========
+
+Plot dates:
+https://ipfs.pics/ipfs/QmVsDVCAbxSWxn4iy23kL9StggF2xKKnfmcfkwMPEMsKpx
+
+Plot user dates:
+https://ipfs.pics/ipfs/QmPA6ikw7KL37EckhFxh6MrG5mXUzbque33diKSuZb3By4
+
+Plot times:
+https://ipfs.pics/ipfs/QmeERrXwDFcS9TJBGFJvsuMutFEjtHuRGyajQZrJVvTCrx
+
+Plot user times:
+https://ipfs.pics/ipfs/QmZGVR1pstSCyAzGjGMaoJyfUF1fXEF7HFY1YW3ZXxYKkX
+
 ---
 
 License:     MIT
