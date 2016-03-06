@@ -38,7 +38,8 @@ if ($L eq "de") {
 sub cd { # convert date
   my ($date) = @_;
   if ($date =~ m/$dre/) {
-    my ($day, $month, $year) = ($1, $2, $3);
+    my ($month, $day, $year) = ($1, $2, $3) if $L eq "us";
+    my ($day, $month, $year) = ($1, $2, $3) if $L eq "us";
     return "$day/$month/$year";
   }
 }
