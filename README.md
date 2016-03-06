@@ -20,26 +20,31 @@ wastat.
    count how often what word was used and output the results, sorted, by
    default, into `words.lis` if -o is mentioned, data will also be
    outputted to STDOUT.
+
 * `uc [chat file] [output file] [-o]`
 
    uc - or *user count* will count how often which user sent a message and
    output the results, sorted, by default, into `users.lis` if -o is
    mentioned, data will also be outputted to STDOUT.
+
 * `uc [chat file] [output file] [-o]`
 
    uc - or *user count* will count how often which
    user sent a message and output the results, sorted, by default, into
    `users.lis` if -o is mentioned, data will also be outputted to STDOUT.
+
 * `pt [chat file]`
 
    pt - or /plot times/ will create a graph
    (using gnuplot), plotting the accumulative ammount of messages over all
    days.
+
 * `pd [chat file] [start] [end]`
 
    pd - or /plot dates/ will create a graph (using gnuplot), plotting
    the ammount of messages over time. The first and the last date will
    be extracted automatically, and generally don't/shouldn't have to be changed. 
+
 * `pu [chat file] [start] [end]`
 
    pd - or /plot users/ will create a graph (using gnuplot),
@@ -48,6 +53,7 @@ wastat.
    automatically, and generally don't/shouldn't have to be changed. The
    script will ask you which users to include, and which not to. You will
    either be able to accept, modify (change name) or ignore.
+
 * `put [chat file] [start] [end]`
 
    put - or /plot user times/ will create a
@@ -55,6 +61,7 @@ wastat.
    for each participant individually. The plot will span from 00:00 to
    23:59.The script will ask you which users to include, and which not to.
    You will either be able to accept, modify (change name) or ignore.
+
 * `clean`
    This command removes all files that ./wastat might have generated.
 
@@ -67,11 +74,11 @@ convert any files from ARGV or STDIN. The result will to redirected to
 STDOUT. Example:
 
 ```Shell
-$ ./waconv de chat\_datei.txt \> chat\_file.txt
+$ ./waconv de chat_datei.txt > chat_file.txt
 ```
 
-This will convert the german `chat\_datei.txt` to the DD/MM/YYY
-`chat\_file.txt`. This now can be used with `wastat`.
+This will convert the german `chat_datei.txt` to the DD/MM/YYY
+`chat_file.txt`. This now can be used with `wastat`.
 
 Currently the following locales are supported:
 * German: `de`
