@@ -16,11 +16,12 @@ Usage: $0 [lang] [chat file]
 
 Supported locale:
 	de:	convert from german
-	us:	convert from us format (MM/DD/YYYY)
+	us:	convert from us format (MM/DD/YYYY, AM/PM)
+	uk:	convert from us format (DD/MM/YYYY, AM/PM)
 " and exit if $L =~ /^(h|$)/ or not @ARGV;
 
 die "Locale not supported\n"
-	unless $L =~ /^de|us/;
+	unless $L =~ /^de|us|uk/;
 
 # line, time and date regex
 my ($tre, $dre, $lre);
@@ -33,13 +34,18 @@ if ($L eq "de") {
   $dre = qr{(\d{2})/(\d{2})/(\d{4})};
   $tre = qr{(\d{1,2}):(\d{2}) (am|pm)};
   $lre = qr{^(\d{1,2}/\d{2}/\d{4}), (\d{1,2}:\d{2} (?:am|pm)) - ([^:]*): (.*)$};
+} elsif ($L eq "uk") {
+  $dre = qr{(\d{2})/(\d{2})/(\d{4})};
+  $tre = qr{(\d{1,2}):(\d{2}) (a\.m\.|p\.m\.)};
+  $lre = qr{^(\d{2}/\d{2}/\d{4}), (\d{1,2}:\d{2} (?:a\.m\.|p\.m\.)) - ([^:]*): (.*)$};
 }
+
 
 sub cd { # convert date
   my ($date) = @_;
   if ($date =~ m/$dre/) {
     my ($month, $day, $year) = ($1, $2, $3);
-    ($month, $day, $year) = ($1, $2, $3) if $L eq "us";
+    ($month, $day, $year) = ($2, $1, $3) if $L eq "us" or $L eq "uk";
     return sprintf "%02d/%02d/%04d", $day, $month, $year;
   } else { return $date; }
 }
@@ -49,6 +55,7 @@ sub cXXtAM { # convert any variation of AM/PM to standard AM/PM
   if ($time =~ m/$tre/) {
     my $noon;
     $noon = $3 eq "vorm" ? "am" : "pm" if $L eq "de";
+    $noon = $3 eq "a.m." ? "am" : "pm" if $L eq "uk";
     $noon = $3  if $L eq "us";
     return "$1:$2 $noon";
   } else { return $time; }
