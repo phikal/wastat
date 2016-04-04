@@ -23,21 +23,24 @@ Supported locale:
 die "Locale not supported\n"
 	unless $L =~ /^de|us|uk/;
 
-# line, time and date regex
-my ($tre, $dre, $lre);
+# line, time and date (and not) regex
+my ($tre, $dre, $lre, $nre);
 
 if ($L eq "de") {
   $dre = qr{(\d{2}).(\d{2}).(\d{4})};
   $tre = qr{(\d{1,2}):(\d{2}) (vorm|nachm).};
-  $lre = qr{^(\d{2}\.\d{2}\.\d{4}), (\d{1,2}:\d{2} (?:vorm|nachm)\.) - ([^:]*): (.*)$};
+  $lre = qr{^(\d{2}\.\d{2}\.\d{4}), (\d{1,2}:\d{2} (?:vorm|nachm)\.) - (?:([^:]*):)? (.*)$};
+  $nre = qr{^(\d{2}\.\d{2}\.\d{4}), (\d{1,2}:\d{2} (?:vorm|nachm)\.) - (.*)$};
 } elsif ($L eq "us") {
   $dre = qr{(\d{2})/(\d{2})/(\d{4})};
   $tre = qr{(\d{1,2}):(\d{2}) (am|pm)};
-  $lre = qr{^(\d{1,2}/\d{2}/\d{4}), (\d{1,2}:\d{2} (?:am|pm)) - ([^:]*): (.*)$};
+  $lre = qr{^(\d{1,2}/\d{2}/\d{4}), (\d{1,2}:\d{2} (?:am|pm)) - (?:([^:]*):)? (.*)$};
+  $nre = qr{^(\d{1,2}/\d{2}/\d{4}), (\d{1,2}:\d{2} (?:am|pm)) - (.*)$};
 } elsif ($L eq "uk") {
   $dre = qr{(\d{2})/(\d{2})/(\d{4})};
   $tre = qr{(\d{1,2}):(\d{2}) (a\.m\.|p\.m\.)};
-  $lre = qr{^(\d{2}/\d{2}/\d{4}), (\d{1,2}:\d{2} (?:a\.m\.|p\.m\.)) - ([^:]*): (.*)$};
+  $lre = qr{^(\d{2}/\d{2}/\d{4}), (\d{1,2}:\d{2} (?:a\.m\.|p\.m\.)) - (?:([^:]*):)? (.*)$};
+  $nre = qr{^(\d{2}/\d{2}/\d{4}), (\d{1,2}:\d{2} (?:a\.m\.|p\.m\.)) - (.*)$};
 }
 
 
@@ -77,9 +80,11 @@ sub ct { # covert time
   }
 }
 
-while (<>) {
-  chomp;
-  next unless (m/$lre/gx);
-  my ($date, $time, $user, $message) = (&cd($1), &ct($2), $3, $4);
-  print "$date, $time - $user: $message\n";
+while (<>) { chomp;
+	if (m/$lre/gx) {
+		my ($date, $time, $user, $message) = (&cd($1), &ct($2), $3, $4);
+		print "$date, $time - $user: $message\n";
+	} else {
+		print "$_\n" if $_ and not m/$nre/gx;
+	}
 }
