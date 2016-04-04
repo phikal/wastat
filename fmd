@@ -32,8 +32,14 @@ for line in sys.stdin:
 items.sort(key=lambda x: x[0])
 for i in items:
 	date = datetime.datetime.utcfromtimestamp(i[0])
+	if date < prev:
+		continue
 	while prev < date-day:
 		print("{}\t{}".format(0, prev.strftime(form)))
 		prev += day
 	print("{}\t{}".format(i[1], date.strftime(form)))
+	prev += day
+
+while prev < end:
+	print("{}\t{}".format(0, prev.strftime(form)))
 	prev += day
