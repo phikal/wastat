@@ -28,16 +28,21 @@ die "No such command\n"
 
 # loop through file
 while (<>) {
-	# only parse messages 
-	next unless /^(\d{2}\/\d{2}\/\d{4}), (\d{2}:\d{2}) - ([^:]*): (.*)$/;
+	chomp;
+	unless (m/^(\d{2}\/\d{2}\/\d{4}), (\d{2}:\d{2}) - ([^:]*): (.*)$/i) {
+		print "$_\n" if $_ and $C =~ m/^m/i;
+	} else {
+		my ($date, $time, $user, $mess) = ($1, $2, $3, $4);
+		$mess =~ s/\s+/ /;
+		chomp $mess;
 
-	my ($date, $time, $user, $mess) = ($1, $2, $3, $4);
-
-	$C =~ m/^d/i and print "$date\n";
-	$C =~ m/^t/i and print "$time\n";
-	$C =~ m/^u/i and print "$user\n";
-	$C =~ m/^m/i and print "$mess\n";
-	$C =~ m/^p/i and print "$user\t$date\n";
-	$C =~ m/^e/i and print "$user\t$time\n";
-	$C =~ m/^a/i and print "$date\t$time\t$user\t$mess\n";
+		$C =~ m/^d/i and print "$date";
+		$C =~ m/^t/i and print "$time";
+		$C =~ m/^u/i and print "$user";
+		$C =~ m/^m/i and print "$mess";
+		$C =~ m/^p/i and print "$user\t$date";
+		$C =~ m/^e/i and print "$user\t$time";
+		$C =~ m/^a/i and print "$date\t$time\t$user\t$mess";
+		print "\n";
+	}
 }
