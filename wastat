@@ -238,15 +238,15 @@ user_count () {
 word_output () {
     if [ "$1" = '-o' ]; then
 	INPUT=${2:-chat.txt}
-	OUTPUT=${3:-users.lis}
+	OUTPUT=${3:-words.lis}
 	OUT=1
     elif [ "$2" = '-o' ]; then
 	INPUT=${1:-chat.txt}
-	OUTPUT=${3:-users.lis}
+	OUTPUT=${3:-words.lis}
 	OUT=1
     else
 	INPUT=${1:-chat.txt}
-	OUTPUT=${2:-users.lis}
+	OUTPUT=${2:-words.lis}
     fi
 
     errcho "Using $INPUT to extract words into $OUTPUT"
