@@ -99,4 +99,4 @@ Plot user times: ![put](https://ipfs.pics/ipfs/QmZGVR1pstSCyAzGjGMaoJyfUF1fXEF7H
 License: MIT<br/>
 Version: 0.3<br/>
 Last update: 05.03.2016<br/>
-Author: Philip Kaludercic <philippija@gmail.com>
+Author: Philip K. <philippija@gmail.com>
