@@ -1,48 +1,40 @@
-#!/usr/bin/perl
+#!/usr/bin/awk -P
 
-# wastat - whatsapp extraction tool
+# waextr - whatsapp extraction tool
 # License: MIT (see LICENSE)
 
-use strict;
-use warnings;
-
-$|++;
-
-# command - get what to do
-my $C = shift @ARGV;
-
-print "$0: Extracts relevant data out of whatsapp messages
-Options (only first charachter required):
-	help:	this message
-	date:	print all dates per message
-	time:	print all times per message
-	users:	print all usernames per message
-	mess:	print all messages (only text)
-	pud:	print persons and dates
-        eut:    extract persons and times
-	all:	print everything (tabbed)
-" and exit if $C =~ /^(h|$)/ or not @ARGV;
-
-die "No such command\n" 
-	if $C =~ /^[^hdtumpea]/;
-
-# loop through file
-while (<>) {
-	chomp;
-	unless (m/^(\d{2}\/\d{2}\/\d{4}), (\d{2}:\d{2}) - ([^:]*): (.*)$/i) {
-		print "$_\n" if $_ and $C =~ m/^m/i;
+BEGIN {
+	req = ARGV[1]
+	if (req ~ /^d/)			pdate = 1;
+	else if (req ~ /^t/)	ptime = 1;
+	else if (req ~ /^u/)	puser = 1;
+	else if (req ~ /^m/)	pmess = 1; # mess(age)
+	else if (req ~ /^p/)	puserdate = 1;
+	else if (req ~ /^e/)	pusertime = 1;
+	else if (req ~ /^a/)	pall = 1;
 	} else {
-		my ($date, $time, $user, $mess) = ($1, $2, $3, $4);
-		$mess =~ s/\s+/ /;
-		chomp $mess;
+		printf "no such command: %s\n", req > /dev/stderr
+		exit 1;
+	}
 
-		$C =~ m/^d/i and print "$date";
-		$C =~ m/^t/i and print "$time";
-		$C =~ m/^u/i and print "$user";
-		$C =~ m/^m/i and print "$mess";
-		$C =~ m/^p/i and print "$user\t$date";
-		$C =~ m/^e/i and print "$user\t$time";
-		$C =~ m/^a/i and print "$date\t$time\t$user\t$mess";
-		print "\n";
+	OFS="\t"
+}
+
+/^\d{2}\/\d{2}\/\d{4}, \d{2}:\d{2} - [^:]*: (.*)$/ !~ $0 { 
+	next;
+}
+
+{
+	for (i = 5; i < NF; i++) {
+		$4 += $i
+		delete $i
 	}
 }
+
+pdate { print $1; }
+ptime { print $2; }
+puser { print $3; } 
+pmess { print $4; } 
+puserdate { print $3, $1; } 
+pusertime { print $3, $2; } 
+pall { print $1, $2, $3, $4; } 
