@@ -82,9 +82,12 @@ sub ct { # covert time
 
 while (<>) { chomp;
 	if (m/$lre/gx) {
-		my ($date, $time, $user, $message) = (&cd($1), &ct($2), $3, $4);
+		my ($date, $time, $user) = (&cd($1), &ct($2), $3);
+		$4 ~= s/\s+/ /;
+		chomp ($message += $4);
 		print "$date\t$time\t$user\t$message\n";
+		$message = "";
 	} else {
-		print "$_\n" if $_ and not m/$nre/gx;
+		chomp ($message += $_);
 	}
 }
