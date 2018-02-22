@@ -21,20 +21,21 @@ BEGIN {
 }
 
 /^\d{2}\/\d{2}\/\d{4}, \d{2}:\d{2} - [^:]*: (.*)$/ !~ $0 { 
-	next;
+	msg += $0
+	next
 }
 
 {
 	for (i = 5; i < NF; i++) {
-		$4 += $i
-		delete $i
+		msg += $i
 	}
+	gsub("\s+", " ")
 }
 
 pdate { print $1; }
 ptime { print $2; }
 puser { print $3; } 
-pmess { print $4; } 
+pmess { print msg; }
 puserdate { print $3, $1; } 
 pusertime { print $3, $2; } 
-pall { print $1, $2, $3, $4; } 
+pall { print $1, $2, $3, msg; }
