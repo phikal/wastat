@@ -1,41 +1,21 @@
-#!/usr/bin/awk -P
+#!/usr/bin/awk -f
 
 # waextr - whatsapp extraction tool
 # License: MIT (see LICENSE)
 
 BEGIN {
 	req = ARGV[1]
-	if (req ~ /^d/)			pdate = 1;
-	else if (req ~ /^t/)	ptime = 1;
-	else if (req ~ /^u/)	puser = 1;
-	else if (req ~ /^m/)	pmess = 1; # mess(age)
-	else if (req ~ /^p/)	puserdate = 1;
-	else if (req ~ /^e/)	pusertime = 1;
-	else if (req ~ /^a/)	pall = 1;
-	} else {
-		printf "no such command: %s\n", req > /dev/stderr
-		exit 1;
-	}
+	date = (req ~ /d/)
+	time = (req ~ /t/)
+	user = (req ~ /u/)
+	mess = (req ~ /m/)
+	delete ARGV[1]
 
-	OFS="\t"
+	FS = "\t"
 }
 
-/^\d{2}\/\d{2}\/\d{4}, \d{2}:\d{2} - [^:]*: (.*)$/ !~ $0 { 
-	msg += $0
-	next
-}
-
-{
-	for (i = 5; i < NF; i++) {
-		msg += $i
-	}
-	gsub("\s+", " ")
-}
-
-pdate { print $1; }
-ptime { print $2; }
-puser { print $3; } 
-pmess { print msg; }
-puserdate { print $3, $1; } 
-pusertime { print $3, $2; } 
-pall { print $1, $2, $3, msg; }
+date { printf("%s\t", $1) }
+time { printf("%s\t", $2) }
+user { printf("%s\t", $3) }
+mess { printf("%s ", $4) }
+{ print "" }
