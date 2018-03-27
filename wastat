@@ -3,301 +3,252 @@
 # wastat toolkit script
 # license: MIT (see LICENSE)
 
-alias errcho='>&2 echo'
-
-show_help () {
-        errcho "wastat toolkit v0.3, by phikal"
-        errcho
-        errcho "usage:"
-        errcho "	word-count, wc:"
-        errcho "		count word occurances"
-        errcho "		default chat file: chat.txt or 2nd argument"
-        errcho "		default output: words.lis or 3rd argument"
-        errcho "		-o option forces run to also print to STDOUT"
-        errcho "	word-output, wo:"
-        errcho "		output all words separately"
-        errcho "		default chat file: chat.txt or 2nd argument"
-        errcho "		default output: words.txt or 3rd argument"
-        errcho "		-o option forces run to also print to STDOUT"
-        errcho "	user-count, uc:"
-        errcho "		count ammount of messages per user"
-        errcho "		default chat file: chat.txt or 2 argument"
-        errcho "		default output: users.lis or 3 argument"
-        errcho "		-o option forces run to also print to STDOUT"
-        errcho "	plot-dates, pd:"
-        errcho "		plot all dates"
-        errcho "		default chat file: chat.txt or 2nd argument"
-        errcho "		the first and last date automatically extracted"
-        errcho "		can be manaully set as 3rd and 4th argument"
-        errcho "	plot-users, pu:"
-        errcho "		plot all users' dates individually"
-        errcho "		default chat file: chat.txt or 2nd argument"
-        errcho "		the first and last date automatically extracted"
-        errcho "		can be manaully set as 3rd and 4th argument"
-        errcho "		programm will Query users to be plotted from stdin"
-        errcho "	plot-user-times, put:"
-        errcho "		plot accumalative ammount of messages sent over all days individually"
-        errcho "		default chat file: chat.txt"
-        errcho "		programm will Query users to be plotted from stdin"
-        errcho "	plot-times, pt:"
-        errcho "		plot accumalative ammount of messages sent over all days"
-        errcho "		default chat file: chat.txt or 2nd argument"
-        errcho "	clean:"
-        errcho "		remove all generated content from direcory"
-        errcho "	help, -h:"
-        errcho "		this message"
+errcho() {
+	>&2 echo "$*"
 }
 
-show_error () {
-        show_help
-        exit 1
+show_help () {
+    errcho "wastat toolkit v0.4, by phikal"
+    errcho
+    errcho "usage:"
+    errcho "    word-count, wc:"
+    errcho "        count word occurances"
+    errcho "        default chat file: chat.txt or 2nd argument"
+	errcho "    user-word-count, uwc:"
+    errcho "        count word occurances per user"
+    errcho "        default chat file: chat.txt or 2nd argument"
+    errcho "    word-output, wo:"
+    errcho "        output all words separately"
+    errcho "        default chat file: chat.txt or 2nd argument"
+    errcho "    user-count, uc:"
+    errcho "        count ammount of messages per user"
+    errcho "        default chat file: chat.txt or 2 argument"
+    errcho "    plot-dates, pd:"
+    errcho "        plot all dates"
+    errcho "        default chat file: chat.txt or 2nd argument"
+    errcho "        the first and last date automatically extracted"
+    errcho "        can be manaully set as 3rd and 4th argument"
+    errcho "    plot-users, pu:"
+    errcho "        plot all users' dates individually"
+    errcho "        default chat file: chat.txt or 2nd argument"
+    errcho "        the first and last date automatically extracted"
+    errcho "        can be manaully set as 3rd and 4th argument"
+    errcho "        programm will Query users to be plotted from stdin"
+    errcho "    plot-user-times, put:"
+    errcho "        plot accumalative ammount of messages sent over all days individually"
+    errcho "        default chat file: chat.txt"
+    errcho "        programm will Query users to be plotted from stdin"
+    errcho "    plot-times, pt:"
+    errcho "        plot accumalative ammount of messages sent over all days"
+    errcho "        default chat file: chat.txt or 2nd argument"
+    errcho "    clean:"
+    errcho "        remove all generated content from direcory"
+    errcho "    help, -h:"
+    errcho "        this message"
 }
 
 plot_times () {
-        if ! type gnuplot > /dev/null; then
-                errcho "gnuplot is needed to plot the data"
-                exit 1
-        fi	
+    if ! type gnuplot > /dev/null; then
+        errcho "gnuplot is needed to plot the data"
+        exit 1
+    fi
 
-        INPUT=${1:-chat.txt}
+    INPUT=${1:-chat.txt}
 
-        errcho "Using $INPUT to plot accumulative message count over all days"
-        ./waextr time $INPUT | sort | uniq -c | ./fmt > time.dat
-        errcho "Finished extraction, opening gnuplot..."
-        gnuplot -p times.gp
+    errcho "Using $INPUT to plot accumulative message count over all days"
+    ./waextr t $INPUT | sort | uniq -c |\
+		./fmt > time.dat
+    errcho "Finished extraction, opening gnuplot..."
+    gnuplot -p times.gp
 }
 
 
 plot_user_times () {
-        if ! type gnuplot > /dev/null; then
-                errcho "gnuplot is needed to plot the data"
-                exit 1
+    if ! type gnuplot > /dev/null; then
+        errcho "gnuplot is needed to plot the data"
+        exit 1
+    fi
+
+    INPUT=${1:-chat.txt}
+
+    errcho "Using $INPUT to plot accumulative message count over all days"
+    errcho "You will be presented a list of all individual partipants from $INPUT"
+    errcho "Please [c]onfirm or [m]odify user names (anything else is ignored)"
+
+    cp indiv_t.templ.gp indiv_t.gp
+
+    COUNT=0
+	mkdir user
+    for user in $(./waextr u $INPUT | sort | uniq | sed 's/ /_/g'); do
+        printf "%s\t\t[c/m/*]: " $user
+        read -N 1 choice
+
+        ouser=$(echo $user | sed 's/_/ /g')
+        name=$ouser
+
+        case "$choice" in
+            c) ;;
+            m)  printf "Enter alias: "
+                read name;;
+            *) continue ;;
+        esac
+
+        ./waextr ud $INPUT |\
+            grep "$ouser" |\
+            sed 's/^.*\t//' |\
+            sort | uniq -c |\
+            ./fmt > "user/$user.dat"
+        printf " (%s)" $(cat "user/$user.dat" 2> /dev/null | wc -l)
+
+        if [ $COUNT -eq 0 ]; then
+            printf "p" >> indiv_t.gp
+        else
+            printf "," >> indiv_t.gp
         fi
 
-        INPUT=${1:-chat.txt}
+        printf "\\\\\n\t\"user/$user.dat\" u 2:1 t \"$name\"" >> indiv_t.gp
+        COUNT=$(($COUNT+1))
 
-        errcho "Using $INPUT to plot accumulative message count over all days"
-        errcho "You will be presented a list of all individual partipants from $INPUT"
-        errcho "Please [c]onfirm or [m]odify user names (anything else is ignored)"
+        echo
+    done
 
-        cp indiv_t.templ.gp indiv_t.gp
+    if [ $COUNT -eq 0 ]; then
+        errcho "It seems like you either didn't select anyone, or nobody could be selected...\nQuitting."
+        exit 1
+    fi
 
-        COUNT=0
-        for user in $(./waextr u $INPUT | sort | uniq | sed 's/ /_/g'); do
-                printf "%s\t\t[c/m/*]: " $user
-                read -N 1 choice
-
-                ouser=$(echo $user | sed 's/_/ /g')
-                name=$ouser
-
-                case "$choice" in
-                        c) ;;
-                        m)  printf "Enter alias: "
-                                read name;;
-                        *) continue ;;
-                esac
-
-                ./waextr eud $INPUT |\
-                        grep "$ouser" |\
-                        sed 's/^.*\t//' |\
-                        sort | uniq -c |\
-                        ./fmt > "$user.dat"
-                printf " (%s)" $(cat "$user.dat" 2> /dev/null | wc -l)
-
-                if test $COUNT -eq 0; then
-                        printf "p" >> indiv_t.gp
-                else
-                        printf "," >> indiv_t.gp
-                fi
-
-                printf "\\\\\n\t\"$user.dat\" u 2:1 t \"$name\"" >> indiv_t.gp
-                COUNT=$(($COUNT+1))
-
-                echo
-        done
-
-        if test $COUNT -eq 0; then
-                errcho "It seems like you either didn't select anyone, or nobody could be selected...\nQuitting."
-                exit 1
-        fi
-
-        errcho "Finished extraction, opening gnuplot..."
-        gnuplot -p indiv_t.gp
+    errcho "Finished extraction, opening gnuplot..."
+    gnuplot -p indiv_t.gp
 }
 
 plot_users () {
-        if ! type gnuplot > /dev/null; then
-                errcho "gnuplot is needed to plot the data"
-                exit 1
+    if ! type gnuplot > /dev/null; then
+        errcho "gnuplot is needed to plot the data"
+        exit 1
+    fi
+
+    INPUT=${1:-chat.txt}
+
+    FIRST=$(head -1 $INPUT | cut -f1)
+    LAST=$(tail -1 $INPUT | cut -f1)
+
+    START=${2:-$FIRST}
+    END=${3:-$LAST}
+
+    errcho "Using $INPUT to plot $COUNT users over time from $START to $END"
+    errcho "You will be presented a list of all individual partipants from $INPUT"
+    errcho "Please [c]onfirm or [m]odify user names (anything else is ignored)"
+
+    cp indiv_d.templ.gp indiv_d.gp
+
+    COUNT=0
+    for user in $(./waextr u $INPUT | sort | uniq | sed 's/ /_/g'); do
+        printf "%s\t\t[c/m/*]: " $user
+        read -N 1 choice
+
+        ouser=$(echo $user | sed 's/_/ /g')
+        name=$ouser
+
+        case "$choice" in
+            c) ;;
+            m)  printf "Enter alias: "
+                read name;;
+            *) continue ;;
+        esac
+
+        ./waextr ud $INPUT |\
+            grep "$ouser" |\
+            sed 's/^.*\t//' |\
+            sort | uniq -c |\
+            fmd $START $END > "$user.dat"
+        printf " (%s)" $(cat "$user.dat" 2> /dev/null | wc -l)
+
+        if [ $COUNT -eq 0 ]; then
+            printf "p" >> indiv_d.gp
+        else
+            printf "," >> indiv_d.gp
         fi
 
-        INPUT=${1:-chat.txt}
+        printf "\\\\\n\t\"$user.dat\" u 2:1 t \"$name\"" >> indiv_d.gp
+        COUNT=$(($COUNT+1))
 
-        FIRST=$(head -1 $INPUT | sed 's/,.*$//')
-        LAST=$(tail -1 $INPUT | sed 's/,.*$//')
+        echo
+    done
 
-        START=${2:-$FIRST}
-        END=${3:-$LAST}
+    if [ $COUNT -eq 0 ]; then
+        errcho "It seems like you either didn't select anyone, or nobody could be selected...\nQuitting."
+        exit 1
+    fi
 
-        errcho "Using $INPUT to plot $COUNT users over time from $START to $END"
-        errcho "You will be presented a list of all individual partipants from $INPUT"
-        errcho "Please [c]onfirm or [m]odify user names (anything else is ignored)"
-
-        cp indiv_d.templ.gp indiv_d.gp	
-
-        COUNT=0
-        for user in $(./waextr u $INPUT | sort | uniq | sed 's/ /_/g'); do
-                printf "%s\t\t[c/m/*]: " $user
-                read -N 1 choice
-
-                ouser=$(echo $user | sed 's/_/ /g')
-                name=$ouser
-
-                case "$choice" in
-                        c) ;;
-                        m)  printf "Enter alias: " 
-                                read name;;
-                        *) continue ;;
-                esac
-
-                ./waextr pud $INPUT |\
-                        grep "$ouser" |\
-                        sed 's/^.*\t//' |\
-                        sort | uniq -c |\
-                        fmd $START $END > "$user.dat"
-                printf " (%s)" $(cat "$user.dat" 2> /dev/null | wc -l)
-
-                if test $COUNT -eq 0; then
-                        printf "p" >> indiv_d.gp
-                else
-                        printf "," >> indiv_d.gp
-                fi
-
-                printf "\\\\\n\t\"$user.dat\" u 2:1 t \"$name\"" >> indiv_d.gp
-                COUNT=$(($COUNT+1))
-
-                echo
-        done
-
-        if test $COUNT -eq 0; then
-                errcho "It seems like you either didn't select anyone, or nobody could be selected...\nQuitting."
-                exit 1
-        fi
-
-        errcho "Finished extraction, opening gnuplot..."
-        gnuplot -p indiv_d.gp
+    errcho "Finished extraction, opening gnuplot..."
+    gnuplot -p indiv_d.gp
 }
 
 plot_dates () {
-        if ! type gnuplot > /dev/null; then
-                errcho "gnuplot is needed to plot the data"
-                exit 1
-        fi	
+    if ! type gnuplot > /dev/null; then
+        errcho "gnuplot is needed to plot the data"
+        exit 1
+    fi
 
-        INPUT=${1:-chat.txt}
+    INPUT=${1:-chat.txt}
 
-        FIRST=$(head -1 $INPUT | sed 's/,.*$//')
-        LAST=$(tail -1 $INPUT | sed 's/,.*$//')
+    FIRST=$(head -1 $INPUT | cut -f1)
+    LAST=$(tail -1 $INPUT | cut -f1)
 
-        START=${2:-$FIRST}
-        END=${3:-$LAST}
+    START=${2:-$FIRST}
+    END=${3:-$LAST}
 
-        errcho "Using $INPUT to plot message count over time from $START to $END"
-        ./waextr date $INPUT | sort | uniq -c | ./fmd $START $END > date.dat
-        errcho "Finished extraction, opening gnuplot..."
-        gnuplot -p dates.gp
+    errcho "Using $INPUT to plot message count over time from $START to $END"
+    ./waextr d $INPUT | sort | uniq -c |\
+		./fmd $START $END > date.dat
+    errcho "Finished extraction, opening gnuplot..."
+    gnuplot -p dates.gp
 }
 
 user_count () {
-        if [ "$1" = '-o' ]; then
-                INPUT=${2:-chat.txt}
-                OUTPUT=${3:-users.lis}
-                OUT=1
-        elif [ "$2" = '-o' ]; then
-                INPUT=${1:-chat.txt}
-                OUTPUT=${3:-users.lis}
-                OUT=1
-        else
-                INPUT=${1:-chat.txt}
-                OUTPUT=${2:-users.lis}
-        fi
-
-        errcho "Using $INPUT to count users into $OUTPUT"
-        # extract message | count | sort numerically
-        ./waextr u $INPUT | sort | uniq -c | sort -nr > $OUTPUT
-        if [ $OUT ]
-        then
-                cat $OUTPUT
-        fi
-
-        errcho "Finished counting users with $(cat $OUTPUT | wc -l) users"
+    INPUT=${1:-chat.txt}
+    ./waextr u $INPUT | sort | uniq -c | sort -nr
 }
 
 word_output () {
-        if [ "$1" = '-o' ]; then
-                INPUT=${2:-chat.txt}
-                OUTPUT=${3:-words.lis}
-                OUT=1
-        elif [ "$2" = '-o' ]; then
-                INPUT=${1:-chat.txt}
-                OUTPUT=${3:-words.lis}
-                OUT=1
-        else
-                INPUT=${1:-chat.txt}
-                OUTPUT=${2:-words.lis}
-        fi
-
-        errcho "Using $INPUT to extract words into $OUTPUT"
-        # extract message | extract words | to upper to lower case
-        ./waextr m $INPUT | grep -E -o "\w+" | tr [:upper:] [:lower:] > $OUTPUT
-        if [ $OUT ]; then
-                cat $OUTPUT
-        fi
-
-        errcho "Finished word output with $(cat $OUTPUT | wc -l) words."
+    INPUT=${1:-chat.txt}
+    ./waextr m $INPUT | grep -E -o "\w+"
 }
 
 word_count () {
-        if [ "$1" = '-o' ]; then
-                INPUT=${2:-chat.txt}
-                OUTPUT=${3:-users.lis}
-                OUT=1
-        elif [ "$2" = '-o' ]; then
-                INPUT=${1:-chat.txt}
-                OUTPUT=${3:-users.lis}
-                OUT=1
-        else
-                INPUT=${1:-chat.txt}
-                OUTPUT=${2:-users.lis}
-        fi
+    INPUT=${1:-chat.txt}
+    ./waextr m $INPUT | grep -E -o "\w+" |\
+		sort | uniq -c | sort -nr
+}
 
-        errcho "Using $INPUT to count words and save result into $OUTPUT"
-        # extract message | extract words | to upper to lower case | count | sort numerically
-        ./waextr m $INPUT | grep -E -o "\w+" | tr [:upper:] [:lower:] | sort | uniq -c | sort -nr > $OUTPUT
-        if [ $OUT ]; then
-                cat $OUTPUT
-        fi
 
-        errcho "Finished word count with $(cat $OUTPUT | wc -l) different words."
+user_word_count () {
+    INPUT=${1:-chat.txt}
+
+	for user in $(./waextr u $INPUT | sort | uniq | sed 's/ /_/g'); do
+		awk -v user="$user"\
+			'BEGIN { FS="\t"; gsub(/_/, " ", user) }
+             $3 == user { count += split($4, a, /  */) }
+             END { printf("%8d %s\n", count, user) }' $INPUT
+	done | sort -nr
 }
 
 clean() {
-        rm *.dat 2> /dev/null
-        rm indiv_{t,d}.gp 2> /dev/null
-        rm words.* 2> /dev/null
-        errcho "Cleaned up."
+    rm *.dat 2> /dev/null
+    rm indiv_{t,d}.gp 2> /dev/null
+    errcho "Cleaned up."
 }
 
 case "$1" in
-        word-count|wc) shift; 	word_count "$@";;
-        word-output|wo) shift; 	word_output "$@";;
-        user-count|uc) shift; 	user_count "$@";;
-        plot-dates|pd) shift; 	plot_dates "$@";;
-        plot-users|pu) shift; 	plot_users "$@";;
-        plot-times|pt) shift; 	plot_times "$@";;
-        plot-user-times|put) shift; plot_user_times "$@";;
-        clean)                      clean;;
-        help|-h)           	        show_help;;
-        *)   		        show_error;;
+    word-count|wc)  	 shift; word_count "$@";;
+    user-word-count|uwc) shift; user_word_count "$@";;
+    word-output|wo)  	 shift; word_output "$@";;
+    user-count|uc)  	 shift; user_count "$@";;
+    plot-dates|pd)  	 shift; plot_dates "$@";;
+    plot-users|pu)  	 shift; plot_users "$@";;
+    plot-times|pt)  	 shift; plot_times "$@";;
+    plot-user-times|put) shift; plot_user_times "$@";;
+    clean)               clean;;
+    help|-h)             show_help;;
+    *)                   show_help; exit 1;;
 esac
-exit 0
