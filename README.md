@@ -36,9 +36,11 @@ chat structure from now on (`waextr` for example).
 Currently, three different formats are recognized, with the following
 associated codes:
 
-- US format (`us`): `MM/DD/YYYY`, `AM/PM`
-- UK format (`uk`): `DD/MM/YYYY`, `A.M./P.M.`
-- German format (`de`): `DD/MM/YYYY`, `vorm./nachm.`
+| Format | Code  | Date         | Time           |
+|--------|-------|--------------|----------------|
+| US     | `uk`  | `MM/DD/YYYY` | `AM/AM`        |
+| UK     | `uk`  | `DD/MM/YYYY` | `A.M./P.M.`    |
+| German | `de`  | `DD/MM/YYYY` | `vorm./nachm.` |
 
 Some of these might be out of date with newer versions, and will will be
 updated with newer versions, as soon as possible.
@@ -63,7 +65,22 @@ This step is necessary if one wants to work with the following two tools.
 `waextr`
 --------
 
-`Waextr` is basically just a helper script for `wastat`.
+`Waextr` is basically just a helper script for `wastat`. It requires one
+argument, which may contain one of the following letter, to enable the
+output of certain columns. These are: `d` (to output the date), `t` (to
+output the times), `u` (to output the user) and `m` (to update the
+messages). So for example `waextr dm [chatfile]`, processing the example
+from above, would output:
+
+	24/01/2018	faust
+	24/01/2016	mephisto
+
+If one executes `wastat` using awk, setting the `usern` variable, only
+those lines will be printed, if the value matches the name. Hence, to output
+
+	24/01/2018	what meaning to these riddling words applies
+
+one would run `awk -v usern=faust -f waextr dm`.
 
 `wastat`
 --------
