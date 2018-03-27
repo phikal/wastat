@@ -1,8 +1,5 @@
 #!/usr/bin/perl
 
-# waconv - whatsapp conversion tool
-# License: MIT (see LICENSE)
-
 use strict;
 use warnings;
 
@@ -84,17 +81,19 @@ sub ct {
   }
 }
 
-my $message;
 while (<>) {
   chomp;
   if (m/$lre/gx) {
-	my ($date, $time, $user) = (&cd($1), &ct($2), $3);
-	chomp ($message .= lc $4);
-	$message =~ s/[^[:alpha:][:space:]]/ /;
-	$message =~ s/\s+/ /;
-	print "$date\t$time\t$user\t$message\n";
-	$message = "";
-  } elsif (!m/$nre/gx) {
-	chomp ($message .= lc $_);
+	my ($date, $time, $user, $message) =
+	  (&cd($1), &ct($2), lc $3, $4);
+	$user =~ s/\W+//g;
+	$message = lc $message;
+	$message =~ s/[\W\s]+/ /g;
+	print "\n" if $. > 1;
+	print  "$date\t$time\t$user\t$message"
+  } else {
+	my $message = lc $_;
+	$message =~ s/[\W\s]+/ /g;
+	print " " .$message;
   }
 }
