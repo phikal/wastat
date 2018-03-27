@@ -14,8 +14,10 @@ BEGIN {
 	FS = "\t"
 }
 
+usern && usern != $3 { next }
+
 date { printf("%s\t", $1) }
 time { printf("%s\t", $2) }
 user { printf("%s\t", $3) }
-mess { printf("%s ", $4) }
+mess { printf("%s", $4) }
 { print "" }
