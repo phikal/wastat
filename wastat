@@ -80,12 +80,10 @@ plot_user_times () {
     COUNT=0
 	mkdir user
     for user in $(./waextr u $INPUT | sort | uniq | sed 's/ /_/g'); do
+		name=$(echo $user | sed 's/_/ /g')
+
         printf "%s\t\t[c/m/*]: " $user
-        read -N 1 choice
-
-        ouser=$(echo $user | sed 's/_/ /g')
-        name=$ouser
-
+        read choice
         case "$choice" in
             c) ;;
             m)  printf "Enter alias: "
@@ -93,9 +91,7 @@ plot_user_times () {
             *) continue ;;
         esac
 
-        ./waextr ud $INPUT |\
-            grep "$ouser" |\
-            sed 's/^.*\t//' |\
+        awk -v usern="$user" -f ./waextr d $INPUT |\
             sort | uniq -c |\
             ./fmt > "user/$user.dat"
         printf " (%s)" $(cat "user/$user.dat" 2> /dev/null | wc -l)
@@ -144,7 +140,7 @@ plot_users () {
     COUNT=0
     for user in $(./waextr u $INPUT | sort | uniq | sed 's/ /_/g'); do
         printf "%s\t\t[c/m/*]: " $user
-        read -N 1 choice
+        read choice
 
         ouser=$(echo $user | sed 's/_/ /g')
         name=$ouser
@@ -157,10 +153,10 @@ plot_users () {
         esac
 
         ./waextr ud $INPUT |\
-            grep "$ouser" |\
+            awk -v |\
             sed 's/^.*\t//' |\
             sort | uniq -c |\
-            fmd $START $END > "$user.dat"
+            ./fmd $START $END > "$user.dat"
         printf " (%s)" $(cat "$user.dat" 2> /dev/null | wc -l)
 
         if [ $COUNT -eq 0 ]; then
