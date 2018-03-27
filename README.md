@@ -1,102 +1,112 @@
-WASTAT - WhatsApp statistics - is a toolset to extract, and analyse data
-from WhatsApp chats, revived in a DD/MM/YYYY and 24h format. These can
-be obtained by sending sending the chat in question via email, f.e. to
-yourself.
+Wastat
+======
 
-(Android: In chat -\> options -\> more -\> email chat)
+Wastat is a toolkit for analysing whatsapp chats, creating statistics
+and plotting pretty graphs.
 
-### How to use
+Setup
+=====
 
-Most common usages are collected in the `wastat` script. By default this
-script will assume your chat is in the current directory and is called
-`chat.txt`. To specify a different file, just append an argument to
-wastat.
+It is assumed that you are using a *nix system, such as Linux, a BSD or
+MacOS. You will require a POSIX compatible shell, perl, [AWK][] and
+[Gnuplot][]. Basic acquaintance with shell operations is also expected.
+Gnuplot is not required if the user doesn't wish to create plots.
 
-#### Commands
+To work with a chat, one first has to receive in in Email format. Later
+on, it might be possible to extract the necessary information from a
+SQLite database, which one can access when one's phone is rooted. Refer
+to the official WhatsApp FAQ to find out how to [Email a chat][]. 
 
-* `wc [chat file] [output file] [-o]`
+One should note that WhatsApp doesn't always allow exporting the full
+chat, due to the extension sizes. This is an external limitation this
+project can't do anything about.
 
-   wc - or *word count* will
-   count how often what word was used and output the results, sorted, by
-   default, into `words.lis` if -o is mentioned, data will also be
-   outputted to STDOUT.
+Parts
+=====
 
-* `uc [chat file] [output file] [-o]`
+`waconv`
+--------
 
-   uc - or *user count* will count how often which user sent a message and
-   output the results, sorted, by default, into `users.lis` if -o is
-   mentioned, data will also be outputted to STDOUT.
+Since different whatsapp versions using different languages export chats
+in different ways, in a generally inconvenient format, the `waconv`
+script standardizes different formats into a simple to parse [TSV][]
+structure. This means, that tools like [AWK][] can easily process the
+chat structure from now on (`waextr` for example).
 
-* `uc [chat file] [output file] [-o]`
+Currently, three different formats are recognized, with the following
+associated codes:
 
-   uc - or *user count* will count how often which
-   user sent a message and output the results, sorted, by default, into
-   `users.lis` if -o is mentioned, data will also be outputted to STDOUT.
+- US format (`us`): `MM/DD/YYYY`, `AM/PM`
+- UK format (`uk`): `DD/MM/YYYY`, `A.M./P.M.`
+- German format (`de`): `DD/MM/YYYY`, `vorm./nachm.`
 
-* `pt [chat file]`
+Some of these might be out of date with newer versions, and will will be
+updated with newer versions, as soon as possible.
 
-   pt - or /plot times/ will create a graph
-   (using gnuplot), plotting the accumulative ammount of messages over all
-   days.
+To actually process a file, made up of lines like these (ie. the `uk`
+format):
 
-* `pd [chat file] [start] [end]`
 
-   pd - or /plot dates/ will create a graph (using gnuplot), plotting
-   the ammount of messages over time. The first and the last date will
-   be extracted automatically, and generally don't/shouldn't have to be changed. 
+	24/01/2018, 9:49 p.m. - Faust: What meaning to these riddling words applies?
+	24/01/2016, 10:20 p.m. - Mephisto: I am the spirit, ever, that denies!
+	And rightly so: since everything created
+	In turn deserves the be annihilated.
 
-* `pu [chat file] [start] [end]`
+one would write `./waconv uk [chatfile]`, and redirect the output. The
+above example would thus become:
 
-   pd - or /plot users/ will create a graph (using gnuplot),
-   plotting the ammount of messages over time, for each participant
-   individually. The first and the last date will be extracted
-   automatically, and generally don't/shouldn't have to be changed. The
-   script will ask you which users to include, and which not to. You will
-   either be able to accept, modify (change name) or ignore.
+	24/01/2018	21:49	faust	what meaning to these riddling words applies 
+	24/01/2016	22:20	mephisto	i am the spirit ever that denies  and rightly so since everything created in turn deserves the be annihilated
+	
+This step is necessary if one wants to work with the following two tools.
 
-* `put [chat file] [start] [end]`
+`waextr`
+--------
 
-   put - or /plot user times/ will create a
-   graph (using gnuplot), plotting the ammount of messages over all days,
-   for each participant individually. The plot will span from 00:00 to
-   23:59.The script will ask you which users to include, and which not to.
-   You will either be able to accept, modify (change name) or ignore.
+`Waextr` is basically just a helper script for `wastat`. 
 
-* `clean`
-   This command removes all files that ./wastat might have generated.
+`wastat`
+--------
 
-### Non-DD/MM/YYYY Files
+This main script has multiple commands, and overview can be generated if
+it is called without any arguments or by calling the script with the
+argument `help`. The same list is also presented here:
 
-Wastat expects the DD/MM/YYYY file format to be used, and therfore
-non-DD/MM/YYYY chat logs have to be converted first with `waconv`. This
-script requires one argument to set the incoming language, and will then
-convert any files from ARGV or STDIN. The result will to redirected to
-STDOUT. Example:
+- `wastat wc`: counts how often words have been used in messages
+- `wastat wo`: prints all words used in messages, each on one line
+- `wastat uc`: counts how often a _user_ (ie. number) has sent a message
+- `wastat uwc`: counts how many "words" each user has used
+- `wastat pt`: plots how many messages have been sent per minute
+- `wastat put`: plots how many messages selected users have sent per
+  minute 
+- `wastat pd`: plots how many messages have been sent each day
+- `wastat pud`: plots how many messages have been sent by selected users
+  each day
 
-```Shell
-$ ./waconv de chat_datei.txt > chat_file.txt
-```
+The axillary command `wastat clean` deletes all files and images
+generated by wastat.
 
-This will convert the german `chat_datei.txt` to the DD/MM/YYY
-`chat_file.txt`. This now can be used with `wastat`.
+examples
+--------
 
-Currently the following locales are supported:
-* German: `de`
-* United States format [MM/DD/YYY]: `us`
+- `wastat pt`: ![`pt`](example_pt.png)
+- `wastat pd`: ![`pd`](example_pd.png)
 
-### Examples
+Legal and other information
+===========================
 
-Plot dates: ![pd](https://ipfs.pics/ipfs/QmVsDVCAbxSWxn4iy23kL9StggF2xKKnfmcfkwMPEMsKpx)
+The current version (0.4) is permissively licensed under a BSD 2-Clause
+or "simplified" [BSD License][]. If there are any issues with the
+software, contact the [author][] or visit the [GitHub repository][].
 
-Plot user dates: ![pu](https://ipfs.pics/ipfs/QmPA6ikw7KL37EckhFxh6MrG5mXUzbque33diKSuZb3By4)
+The chat extract from this document has been taken from A. S. Kline's
+[English Translation][] of J. W. Goethe's _Faust_.
 
-Plot times: ![pt](https://ipfs.pics/ipfs/QmeERrXwDFcS9TJBGFJvsuMutFEjtHuRGyajQZrJVvTCrx)
-
-Plot user times: ![put](https://ipfs.pics/ipfs/QmZGVR1pstSCyAzGjGMaoJyfUF1fXEF7HFY1YW3ZXxYKkX)
-
-------------------------------------------------------------------------
-
-License: MIT<br/>
-Version: 0.3<br/>
-Last update: 05.03.2016<br/>
-Author: Philip K. <philippija@gmail.com>
+[AWK]: https://en.wikipedia.org/wiki/AWK
+[Gnuplot]: http://www.gnuplot.info/
+[Email a chat]: https://faq.whatsapp.com/en/android/23756533/
+[TSV]: https://en.wikipedia.org/wiki/Tab-separated_values
+[BSD License]: ./LICENSE
+[author]: https://dyst.ax.lt/~xat/
+[GitHub repository]: https://github.com/phikal/wastat
+[English Translation]: https://www.poetryintranslation.com/klinesfaust.php
