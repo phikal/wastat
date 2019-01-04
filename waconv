@@ -95,7 +95,7 @@ while (<>) {
 	$message = lc $message;
 	$message =~ s/[\W\s]+/ /g;
 	print "\n" if $. > 1;
-	print  "$date\t$time\t$user\t$message"
+	print  "$date\t$time\t$user\t$message" if $user ne "error";
   } else {
 	my $message = lc $_;
 	$message =~ s/[\W\s]+/ /g;
