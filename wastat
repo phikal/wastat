@@ -17,6 +17,9 @@ show_help () {
 	errcho "    user-word-count, uwc:"
     errcho "        count word occurances per user"
     errcho "        default chat file: chat.txt or 2nd argument"
+	errcho "    avg-msg-length, aml:"
+    errcho "        average length of messages per user"
+    errcho "        default chat file: chat.txt or 2nd argument"
     errcho "    word-output, wo:"
     errcho "        output all words separately"
     errcho "        default chat file: chat.txt or 2nd argument"
@@ -56,8 +59,7 @@ plot_times () {
     INPUT=${1:-chat.txt}
 
     errcho "Using $INPUT to plot accumulative message count over all days"
-    ./waextr t $INPUT | sort | uniq -c |\
-		./fmt > time.dat
+    ./waextr t "$INPUT" | sort | uniq -c | ./fmt > time.dat
     errcho "Finished extraction, opening gnuplot..."
     gnuplot -p times.gp
 }
@@ -217,6 +219,16 @@ word_count () {
 		sort | uniq -c | sort -nr
 }
 
+avg_msg_length () {
+	INPUT=${1:-chat.txt}
+
+	for user in $(./waextr u "$INPUT" | sort | uniq | sed 's/ /_/g'); do
+		awk -v user="$user"\
+			'BEGIN { FS="\t"; gsub(/_/, " ", user) }
+             $3 == user { count += split($4, a, /  */); msgs++ }
+             END { printf("%8g %s\n", count/msgs, user) }' "$INPUT"
+	done | sort -nr
+}
 
 user_word_count () {
     INPUT=${1:-chat.txt}
@@ -238,6 +250,7 @@ clean() {
 case "$1" in
     word-count|wc)  	 shift; word_count "$@";;
     user-word-count|uwc) shift; user_word_count "$@";;
+	avg-msg-length|aml)  shift; avg_msg_length "$@";;
     word-output|wo)  	 shift; word_output "$@";;
     user-count|uc)  	 shift; user_count "$@";;
     plot-dates|pd)  	 shift; plot_dates "$@";;
