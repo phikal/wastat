@@ -7,27 +7,16 @@ import sys
 import re
 from datetime import datetime, timedelta
 
-FORM = "%H:%M"
-MINUTE = timedelta(minutes=1)
+form = "%H:%M"
+pat = re.compile(r'\s*(\d+) (\d{2}:\d{2})')
+vals = dict([(datetime.strptime(match.group(2), form),
+              int(match.group(1)))
+             for line in sys.stdin
+             for match in [(pat.match(line))]
+             if match])
 
-PREV = datetime.strptime("00:00", FORM)
-PATTERN = re.compile(r"^\s*(.*?)\s+(\d{2}:\d{2})")
-
-ITEMS = []
-
-for line in sys.stdin:
-    match = PATTERN.match(line)
-    if not match:
-        continue
-    ds = match.group(2)
-    date = datetime.strptime(ds, FORM)
-    ITEMS.append((date, match.group(1)))
-
-FORM = "%H:%M"
-ITEMS.sort(key=lambda x: x[0])
-for now in ITEMS:
-    while PREV < now[0]:
-        print("{}\t{}".format(0, datetime.strftime(PREV, FORM)))
-        PREV += MINUTE
-    print("{}\t{}".format(now[1], datetime.strftime(now[0], FORM)))
-    PREV += MINUTE
+time = datetime.strptime("00:00", form)
+while time < datetime.strptime("23:59", form):
+    print("{}\t{}".format(vals.get(time, 0),
+                          datetime.strftime(time, form)))
+    time += timedelta(minutes=1)

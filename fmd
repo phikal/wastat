@@ -3,43 +3,24 @@
 # fill missing dates (and sort)
 # licence: MIT (see LICENSE)
 
-import datetime
-import time
+from datetime import datetime, timedelta
 import sys
-import fileinput
 import re
 
 if len(sys.argv) < 3:
-	print("usage: prog | fmd [start date] [end date]")
-	quit()
+        print("usage: prog | fmd [start date] [end date]")
+        quit(1)
+
+pat = re.compile(r'^\s*(\d+) (\d{2}/\d{2}/\d{4})')
+vals = dict([(datetime.strptime(match.group(2), "%m/%d/%Y"),
+              int(match.group(1)))
+             for line in sys.stdin
+             for match in [pat.match(line)]
+             if match])
 
 form = "%d/%m/%Y"
-day = datetime.timedelta(days=1)
-prev = datetime.datetime.strptime(sys.argv[1], form)
-end = datetime.datetime.strptime(sys.argv[2], form)
-
-pattern = re.compile(r"^\s*(.*)\s+(\d{2}/\d{2}/\d{4})")
-
-items = []
-for line in sys.stdin:
-	match = pattern.match(line)
-	if not match:
-		continue
-	ds = match.group(2)
-	date = datetime.datetime.strptime(ds, form).timestamp()
-	items.append((date, match.group(1)))
-
-items.sort(key=lambda x: x[0])
-for i in items:
-	date = datetime.datetime.utcfromtimestamp(i[0])
-	if date < prev:
-		continue
-	while prev < date-day:
-		print("{}\t{}".format(0, prev.strftime(form)))
-		prev += day
-	print("{}\t{}".format(i[1], date.strftime(form)))
-	prev += day
-
-while prev < end:
-	print("{}\t{}".format(0, prev.strftime(form)))
-	prev += day
+time = datetime.strptime(sys.argv[1], form)
+while time < datetime.strptime(sys.argv[2], form):
+        print("{}\t{}".format(vals.get(time, 0),
+                              time.strftime(form)))
+        time += timedelta(days=1)
