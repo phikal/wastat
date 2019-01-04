@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # wastat toolkit script
 # license: MIT (see LICENSE)
@@ -80,23 +80,22 @@ plot_user_times () {
     cp indiv_t.templ.gp indiv_t.gp
 
     COUNT=0
-	mkdir user
-    for user in $(./waextr u $INPUT | sort | uniq | sed 's/ /_/g'); do
-		name=$(echo $user | sed 's/_/ /g')
+	mkdir -f user
+    for user in $(./waextr u "$INPUT" | sort | uniq | sed 's/ /_/g'); do
+		name=$(echo "$user" | sed 's/_/ /g')
 
-        printf "%s\t\t[c/m/*]: " $user
-        read choice
+        printf "%s\t\t[c/m/*]: " "$user"
+        read -r choice
         case "$choice" in
             c) ;;
             m)  printf "Enter alias: "
-                read name;;
+                read -r name;;
             *) continue ;;
         esac
 
-        awk -v usern="$user" -f ./waextr d $INPUT |\
-            sort | uniq -c |\
+        awk -v usern="$user" -f ./waextr d "$INPUT" |\
             ./fmt > "user/$user.dat"
-        printf " (%s)" $(cat "user/$user.dat" 2> /dev/null | wc -l)
+        printf " (%s)" "$(cat < "user/$user.dat" 2> /dev/null | wc -l)"
 
         if [ $COUNT -eq 0 ]; then
             printf "p" >> indiv_t.gp
@@ -104,8 +103,8 @@ plot_user_times () {
             printf "," >> indiv_t.gp
         fi
 
-        printf "\\\\\n\t\"user/$user.dat\" u 2:1 t \"$name\"" >> indiv_t.gp
-        COUNT=$(($COUNT+1))
+		printf '\\\n\t"user/%s.dat" u 2:1 t "%s"' "$user" "$name" >> indiv_t.gp
+        COUNT=$((COUNT+1))
 
         echo
     done
@@ -127,8 +126,8 @@ plot_users () {
 
     INPUT=${1:-chat.txt}
 
-    FIRST=$(head -1 $INPUT | cut -f1)
-    LAST=$(tail -1 $INPUT | cut -f1)
+    FIRST=$(head -1 "$INPUT" | cut -f1)
+    LAST=$(tail -1 "$INPUT" | cut -f1)
 
     START=${2:-$FIRST}
     END=${3:-$LAST}
@@ -140,26 +139,23 @@ plot_users () {
     cp indiv_d.templ.gp indiv_d.gp
 
     COUNT=0
-    for user in $(./waextr u $INPUT | sort | uniq | sed 's/ /_/g'); do
-        printf "%s\t\t[c/m/*]: " $user
-        read choice
+    for user in $(./waextr u "$INPUT" | sort | uniq | sed 's/ /_/g'); do
+        printf "%s\t\t[c/m/*]: " "$user"
+        read -r choice
 
-        ouser=$(echo $user | sed 's/_/ /g')
+        ouser=$(echo "$user" | sed 's/_/ /g')
         name=$ouser
 
         case "$choice" in
             c) ;;
             m)  printf "Enter alias: "
-                read name;;
+                read -r name;;
             *) continue ;;
         esac
 
-        ./waextr ud $INPUT |\
-            awk -v |\
-            sed 's/^.*\t//' |\
-            sort | uniq -c |\
-            ./fmd $START $END > "$user.dat"
-        printf " (%s)" $(cat "$user.dat" 2> /dev/null | wc -l)
+        awk -v usern="$user" -f ./waextr d "$INPUT" |\
+            sort | uniq -c | ./fmd "$START" "$END" > "$user.dat"
+        printf " (%s)" "$(cat < "$user.dat" 2> /dev/null | wc -l)"
 
         if [ $COUNT -eq 0 ]; then
             printf "p" >> indiv_d.gp
@@ -167,8 +163,8 @@ plot_users () {
             printf "," >> indiv_d.gp
         fi
 
-        printf "\\\\\n\t\"$user.dat\" u 2:1 t \"$name\"" >> indiv_d.gp
-        COUNT=$(($COUNT+1))
+		printf '\\\n\t"%s.dat" u 2:1 t "%s"' "$user" "$name" >> indiv_d.gp
+        COUNT=$((COUNT + 1))
 
         echo
     done
@@ -190,32 +186,31 @@ plot_dates () {
 
     INPUT=${1:-chat.txt}
 
-    FIRST=$(head -1 $INPUT | cut -f1)
-    LAST=$(tail -1 $INPUT | cut -f1)
+    FIRST=$(head -1 "$INPUT" | cut -f1)
+    LAST=$(tail -1 "$INPUT" | cut -f1)
 
     START=${2:-$FIRST}
     END=${3:-$LAST}
 
     errcho "Using $INPUT to plot message count over time from $START to $END"
-    ./waextr d $INPUT | sort | uniq -c |\
-		./fmd $START $END > date.dat
+    ./waextr d "$INPUT" | sort | uniq -c | ./fmd "$START" "$END" > date.dat
     errcho "Finished extraction, opening gnuplot..."
     gnuplot -p dates.gp
 }
 
 user_count () {
     INPUT=${1:-chat.txt}
-    ./waextr u $INPUT | sort | uniq -c | sort -nr
+    ./waextr u "$INPUT" | sort | uniq -c | sort -nr
 }
 
 word_output () {
     INPUT=${1:-chat.txt}
-    ./waextr m $INPUT | grep -E -o "\w+"
+    ./waextr m "$INPUT" | grep -E -o "\w+"
 }
 
 word_count () {
     INPUT=${1:-chat.txt}
-    ./waextr m $INPUT | grep -E -o "\w+" |\
+    ./waextr m "$INPUT" | grep -E -o "\w+" |\
 		sort | uniq -c | sort -nr
 }
 
@@ -233,16 +228,16 @@ avg_msg_length () {
 user_word_count () {
     INPUT=${1:-chat.txt}
 
-	for user in $(./waextr u $INPUT | sort | uniq | sed 's/ /_/g'); do
+	for user in $(./waextr u "$INPUT" | sort | uniq | sed 's/ /_/g'); do
 		awk -v user="$user"\
 			'BEGIN { FS="\t"; gsub(/_/, " ", user) }
              $3 == user { count += split($4, a, /  */) }
-             END { printf("%8d %s\n", count, user) }' $INPUT
+             END { printf("%8d %s\n", count, user) }' "$INPUT"
 	done | sort -nr
 }
 
 clean() {
-    rm *.dat 2> /dev/null
+    rm ./*.dat 2> /dev/null
     rm indiv_{t,d}.gp 2> /dev/null
     errcho "Cleaned up."
 }
