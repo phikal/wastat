@@ -1,3 +1,6 @@
+set term png
+set output "indiv_d.png"
+
 set timefmt "%d/%m/%Y"
 set format x "%d/%m"
 set xdata time
