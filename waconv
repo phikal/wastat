@@ -14,27 +14,29 @@ Usage: $0 [lang] [chat file]
 Supported locale:
 	de:	convert from german
 	us:	convert from us format (MM/DD/YYYY, AM/PM)
-	uk:	convert from us format (DD/MM/YYYY, AM/PM)
+	uk:	convert from uk format (DD/MM/YYYY, AM/PM)
+   gen: convert from general format (DD/MM/YYYY)
 " and exit if $L =~ /^(h|$)/ or not @ARGV;
 
 # line, time and date (and not) regex
-my ($tre, $dre, $lre, $nre);
+my ($tre, $dre, $lre);
 
 if ($L eq "de") {
   $dre = qr{(\d{2}).(\d{2}).(\d{4})};
   $tre = qr{(\d{1,2}):(\d{2}) (vorm|nachm).};
   $lre = qr{^(\d{2}\.\d{2}\.\d{4}), (\d{1,2}:\d{2} (?:vorm|nachm)\.) - (?:([^:]*):)? (.*)$};
-  $nre = qr{^(\d{2}\.\d{2}\.\d{4}), (\d{1,2}:\d{2} (?:vorm|nachm)\.) - (.*)$};
 } elsif ($L eq "us") {
   $dre = qr{(\d{2})/(\d{2})/(\d{4})};
   $tre = qr{(\d{1,2}):(\d{2}) (am|pm)};
   $lre = qr{^(\d{1,2}/\d{2}/\d{4}), (\d{1,2}:\d{2} (?:am|pm)) - (?:([^:]*):)? (.*)$};
-  $nre = qr{^(\d{1,2}/\d{2}/\d{4}), (\d{1,2}:\d{2} (?:am|pm)) - (.*)$};
 } elsif ($L eq "uk") {
   $dre = qr{(\d{2})/(\d{2})/(\d{4})};
   $tre = qr{(\d{1,2}):(\d{2}) (a\.m\.|p\.m\.)};
   $lre = qr{^(\d{2}/\d{2}/\d{4}), (\d{1,2}:\d{2} (?:a\.m\.|p\.m\.)) - (?:([^:]*):)? (.*)$};
-  $nre = qr{^(\d{2}/\d{2}/\d{4}), (\d{1,2}:\d{2} (?:a\.m\.|p\.m\.)) - (.*)$};
+} elsif ($L eq "gen") {
+  $dre = qr{(\d{2})/(\d{2})/(\d{4})};
+  $tre = qr{(\d{1,2}):(\d{2})};
+  $lre = qr{^(\d{2}/\d{2}/\d{4}), (\d{1,2}:\d{2}) - (?:([^:]*):)? (.*)$};
 } else {
   die "Locale not supported\n"
 }
@@ -75,6 +77,9 @@ sub c12t24 {
 # covert time
 sub ct {
   my ($time) = @_;
+  if ($L eq "gen") {
+	return $time
+  }
   if ($time =~ m/$tre/) {
     my ($hour, $min) = c12t24(cXXtAM($time));
     return sprintf "%02d:%02d", $hour, $min;
