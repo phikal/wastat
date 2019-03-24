@@ -116,8 +116,8 @@ examples
 Legal and other information
 ===========================
 
-The current version (0.4) is permissively licensed under a BSD 2-Clause
-or "simplified" [BSD License][]. If there are any issues with the
+This software has been placed into the public domain, or an approximation
+of it, under [CC0]. If there are any issues with the
 software, contact the [author][] or visit the [GitHub repository][].
 
 The chat extract from this document has been taken from A. S. Kline's
@@ -127,7 +127,7 @@ The chat extract from this document has been taken from A. S. Kline's
 [Gnuplot]: http://www.gnuplot.info/
 [Email a chat]: https://faq.whatsapp.com/en/android/23756533/
 [TSV]: https://en.wikipedia.org/wiki/Tab-separated_values
-[BSD License]: ./LICENSE
+[CC0]: ./LICENSE
 [author]: https://dyst.ax.lt/~xat/
 [GitHub repository]: https://github.com/phikal/wastat
 [English Translation]: https://www.poetryintranslation.com/klinesfaust.php
