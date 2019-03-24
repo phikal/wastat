@@ -8,14 +8,14 @@ Setup
 =====
 
 It is assumed that you are using a *nix system, such as Linux, a BSD or
-MacOS. You will require a POSIX compatible shell, perl, [AWK][] and
-[Gnuplot][]. Basic acquaintance with shell operations is also expected.
+MacOS. You will require a POSIX compatible shell, perl, [AWK] and
+[Gnuplot]. Basic acquaintance with shell operations is also expected.
 Gnuplot is not required if the user doesn't wish to create plots.
 
 To work with a chat, one first has to receive in in Email format. Later
 on, it might be possible to extract the necessary information from a
 SQLite database, which one can access when one's phone is rooted. Refer
-to the official WhatsApp FAQ to find out how to [Email a chat][].
+to the official WhatsApp FAQ to find out how to [Email a chat].
 
 One should note that WhatsApp doesn't always allow exporting the full
 chat, due to the extension sizes. This is an external limitation this
@@ -29,8 +29,8 @@ Parts
 
 Since different whatsapp versions using different languages export chats
 in different ways, in a generally inconvenient format, the `waconv`
-script standardizes different formats into a simple to parse [TSV][]
-structure. This means, that tools like [AWK][] can easily process the
+script standardizes different formats into a simple to parse [TSV]
+structure. This means, that tools like [AWK] can easily process the
 chat structure from now on (`waextr` for example).
 
 Currently, three different formats are recognized, with the following
@@ -118,10 +118,10 @@ Legal and other information
 
 This software has been placed into the public domain, or an approximation
 of it, under [CC0]. If there are any issues with the
-software, contact the [author][] or visit the [GitHub repository][].
+software, contact the [author] or visit the [GitHub repository].
 
 The chat extract from this document has been taken from A. S. Kline's
-[English Translation][] of J. W. Goethe's _Faust_.
+[English Translation] of J. W. Goethe's _Faust_.
 
 [AWK]: https://en.wikipedia.org/wiki/AWK
 [Gnuplot]: http://www.gnuplot.info/
